@@ -2,7 +2,7 @@ classdef Jointspace_Generator < handle
 
     properties
         cart1 = Cart(0, 0, 0, 0);
-        cart2 = Cart(0, 40, -90, 90);
+        cart2 = Cart(0, 40, -45, 45);
         cart3 = Cart(0, 30, 0, 0);
         
         % Lists or the positions in different formats
@@ -107,13 +107,13 @@ classdef Jointspace_Generator < handle
             rng('shuffle');
             randi([-10 10],1,1000);
             
-            lin_arr = linspace(self.cart2.lin_min,self.cart2.lin_max,(self.cart2.lin_max-self.cart2.lin_min)/5+1);
-            rot_arr = linspace(self.cart2.rot_min,self.cart2.rot_max,(self.cart2.rot_max-self.cart2.rot_min)/5+1);
+            arr1 = linspace(self.cart2.lin_min,self.cart2.lin_max,(self.cart2.lin_max-self.cart2.lin_min)/5+1);
+            arr2 = linspace(self.cart2.rot_min,self.cart2.rot_max,(self.cart2.rot_max-self.cart2.rot_min)/5+1);
             
             f_array = [];
-            for e = 1:size(lin_arr,2)
-                for f = 1:size(rot_arr,2)
-                        f_array = [f_array; [lin_arr(1,e), rot_arr(1,f)]] ;
+            for e = 1:size(arr2,2)
+                for f = 1:size(arr1,2)
+                        f_array = [f_array; [arr1(1,f), arr2(1,e), arr3(1,d)]] ;
                 end
             end
 
