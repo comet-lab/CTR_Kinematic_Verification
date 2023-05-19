@@ -1,8 +1,8 @@
-% Initialize test information
+clear% Initialize test information
 num_tubes = 2; % number of tubes for test
 num_pts = 20;  % number of test points
 rotation = true; % true if test includes rotation
-COMPort = "COM5";
+COMPort = "COM3";
 
 % Create a random list of joint variables
 generator = Jointspace_Generator();
@@ -20,6 +20,14 @@ ser = serialport(COMPort, 250000);
 data_arr = zeros(1*10^3, 20);
 frame_count = 0;
 
+theClient = NatNetML.NatNetClientML(0); % Input = iConnectionType: 0 = Multicast, 1 = Unicast
+
+% Connect to an OptiTrack server (Motive)
+HostIP = char('130.215.211.19');
+theClient.Initialize(HostIP, HostIP);
+
+disp('OptiTrack NatNet connected!')
+
 % Iterate thru points to move robot and collect data
 for i = 1:size(gcode_list,1)
     fopen(ser);
@@ -30,7 +38,7 @@ for i = 1:size(gcode_list,1)
     % Tell the actuator to wait for previous command to finish and send the
     % current iteration that it finished
     fprintf(ser, 'M400\n');
-    fprintf(ser, 'M118 '+string(i)+'\n');
+    fprintf(ser, "M118 "+string(i)+"\n");
 
     % Read the data return for the correct number. Here we only read one
     % character beacuse, well, for lack of better explanation, MATLAB is a
@@ -47,6 +55,7 @@ for i = 1:size(gcode_list,1)
     for t = 1:10
         frame_count = frame_count + 1;
 
+%         frameOfData = theClient.GetLastFrameOfData();
         frameOfData = theClient.GetLastFrameOfData();
         
         % Here the robot tip MUST be the first rigid body recorded.

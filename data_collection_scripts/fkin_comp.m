@@ -15,7 +15,7 @@ x_offset = 0.00;
 % y_offset = -0.00725;
 y_offset = -0.00725+0.00268;
 % z_offset = 0.110;
-z_offset = 0.1123;
+z_offset = 0.1127;
 
 
 % translation offsets for end effector
@@ -28,7 +28,7 @@ z_ee = 0.005;
 
 
 % enter filename / filepath if different folder
-filename = 'data_files/02_05_23-18_05_2-tubes_in-plane-bending';
+filename = 'data_files/16_05_23-13_26_2-tubes_rotate';
 % filename = 'data_files/18_04_23-15_27_2-tubes_in-plane-bending';  
 % filename = 'data_files/14_04_23-16_51_2-tubes_in-plane-bending';
 
@@ -76,7 +76,11 @@ for i = 1:test_points
     % 4x 4           -> tranformation matrix
     % x 3            -> three transformations for each joint pose
     % x n            -> iterating trhough the test points
-    TT(:,:,:,i) = robot.fkin(q_2tubes(i,:));
+%     TT(:,:,:,i) = robot.fkin(q_2tubes(i,:));
+    TT(:,:,:,i) = robot.fkin_tors(q_2tubes(i,:));
+
+    theta(:,i) = robot.Theta;
+    psi(:,i) = robot.Psi;
 
     
     f1_f0 = [[eye(3),[0,0,q_2tubes(i,1)*10^-3]'];[0,0,0,1]];

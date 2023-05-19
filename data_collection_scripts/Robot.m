@@ -12,13 +12,16 @@ classdef Robot < handle
 %         tube2 = Tube(2.8*10^-3, 4.0*10^-3, 1/14, 116.0, 50*10^-3, 1935*10^6)
 %         tube1 = Tube(4.6*10^-3, 5.8*10^-3, 1/10, 91.21, 50*10^-3, 1935*10^6)
 
-        tube2 = Tube(2.8*10^-3, 4.0*10^-3, 1/14, 116.0*10^-3, 50*10^-3, 1935*10^6)
+        tube2 = Tube(2.8*10^-3, 4.0*10^-3, 1/14, 161.0*10^-3, 50*10^-3, 1935*10^6)
         tube1 = Tube(4.6*10^-3, 5.8*10^-3, 1/11, 91.21*10^-3, 50*10^-3, 1935*10^6)
 
       
 
         rot_ee = [] %end effector rotation
         pos_ee = [] % end effector translation
+
+        Psi = []
+        Theta = []
     end
 
     methods
@@ -287,6 +290,8 @@ classdef Robot < handle
         
             % Calculate chi
             theta = tors_comp(self, [q_var(3), q_var(4)], s);
+            self.Theta  = [q_var(3), q_var(4)];
+            self.Psi = theta;
 
             x1n = self.tube1.E*self.tube1.I*self.tube1.k*cos(theta(1));
             x1 = x1n/(self.tube1.E*self.tube1.I + self.tube2.E*self.tube2.I);
