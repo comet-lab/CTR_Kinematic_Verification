@@ -28,7 +28,7 @@ z_ee = 0.005;
 
 
 % enter filename / filepath if different folder
-filename = '19_05_23-13_23_2-tubes_rotate';
+filename = 'data_files/19_05_23-13_23_2-tubes_rotate';
 % filename = 'data_files/18_04_23-15_27_2-tubes_in-plane-bending';  
 % filename = 'data_files/14_04_23-16_51_2-tubes_in-plane-bending';
 
