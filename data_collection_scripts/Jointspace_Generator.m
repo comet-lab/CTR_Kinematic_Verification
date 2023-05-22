@@ -1,8 +1,8 @@
 classdef Jointspace_Generator < handle
 
     properties
-        cart1 = Cart(0, 50, -45, 45);
-        cart2 = Cart(0, 40, -45, 45);
+        cart1 = Cart(0, 0, 0, 0);
+        cart2 = Cart(0, 40, -90, 90);
         cart3 = Cart(0, 30, 0, 0);
         
         % Lists or the positions in different formats
@@ -98,6 +98,36 @@ classdef Jointspace_Generator < handle
             self.positions_gcode_list = self.positions_list_to_gcode_list();
 %                 self.positions_as_list = self.get_pose_as_list()
 %                 print(self.robot1.fkin([lin1, lin1+lin2, lin1+lin2+lin3, rot1, rot2, rot3]))
+        end
+
+        function positions_list = get_all_spaced_positions_2tubes(self,num_positions)
+            
+            
+%             rng(0,'twister');
+            rng('shuffle');
+            randi([-10 10],1,1000);
+            
+            lin_arr = linspace(self.cart2.lin_min,self.cart2.lin_max,(self.cart2.lin_max-self.cart2.lin_min)/5+1);
+            rot_arr = linspace(self.cart2.rot_min,self.cart2.rot_max,(self.cart2.rot_max-self.cart2.rot_min)/5+1);
+            
+            f_array = [];
+            for e = 1:size(lin_arr,2)
+                for f = 1:size(rot_arr,2)
+                        f_array = [f_array; [lin_arr(1,e), rot_arr(1,f)]] ;
+                end
+            end
+
+            for ctr = 1:size(f_array,1)
+%                 new_pose = Pose(lin1, (lin1+lin2), (lin1+lin2+lin3), rot1, rot2, rot3);
+                new_pose = Pose(0, (f_array(ctr,1)), 0, 0, f_array(ctr,2), 0);
+                positions_list(ctr,1) = new_pose;
+            end
+
+            self.positions_list = positions_list;
+            self.positions_list_string = self.positions_list_to_string();
+            self.positions_gcode_string = self.positions_list_to_gcode_string();
+            self.positions_gcode_list = self.positions_list_to_gcode_list();
+        
         end
 
         % Returns a string of joint positions; not used for any code --

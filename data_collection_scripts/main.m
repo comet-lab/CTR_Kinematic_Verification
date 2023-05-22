@@ -7,12 +7,13 @@ COMPort = "COM3";
 % Create a random list of joint variables
 generator = Jointspace_Generator();
 
-joint_list = generator.get_new_random_positions(num_pts);
+% joint_list = generator.get_new_random_positions(num_pts);
 % joint_list = generator.get_spaced_random_positions(num_pts);
+joint_list = generator.get_all_spaced_positions_2tubes(num_pts);
 
 
 gcode_list = generator.positions_gcode_list();
-
+size(gcode_list,1)
 % Define and open the serial port
 ser = serialport(COMPort, 250000);
 
@@ -33,12 +34,14 @@ for i = 1:size(gcode_list,1)
     fopen(ser);
 
     % Send the postion command from the list of positions
-    fprintf(ser, gcode_list(i,1));
+    writeline(ser, gcode_list(i,1));
 
     % Tell the actuator to wait for previous command to finish and send the
     % current iteration that it finished
-    fprintf(ser, 'M400\n');
-    fprintf(ser, "M118 "+string(i)+"\n");
+    writeline(ser, 'M400\n');
+    writeline(ser, 'M118 '+ string(i) +'\n');
+%     echo_str = 'M118 '+ string(i) +'\n';
+%     writeline(ser, echo_str);
 
     % Read the data return for the correct number. Here we only read one
     % character beacuse, well, for lack of better explanation, MATLAB is a
@@ -79,20 +82,20 @@ for i = 1:size(gcode_list,1)
         data_arr(frame_count, 12) = joint_list(i,1).rot2;
         data_arr(frame_count, 13) = joint_list(i,1).rot3;
 
-%         robot_base = frameOfData.RigidBodies(1); % Robot base data
-%         data_arr(frame_count, 14) = robot_base.x;
-%         data_arr(frame_count, 15) = robot_base.y;
-%         data_arr(frame_count, 16) = robot_base.z;
-%     
-%         data_arr(frame_count, 17) = robot_base.qw;
-%         data_arr(frame_count, 18) = robot_base.qx;
-%         data_arr(frame_count, 19) = robot_base.qy;
-%         data_arr(frame_count, 20) = robot_base.qz;
+        robot_base = frameOfData.RigidBodies(2); % Robot base data
+        data_arr(frame_count, 14) = robot_base.x;
+        data_arr(frame_count, 15) = robot_base.y;
+        data_arr(frame_count, 16) = robot_base.z;
+    
+        data_arr(frame_count, 17) = robot_base.qw;
+        data_arr(frame_count, 18) = robot_base.qx;
+        data_arr(frame_count, 19) = robot_base.qy;
+        data_arr(frame_count, 20) = robot_base.qz;
 
         pause(0.1)
     end
     pause(1);
-    fclose(ser);
+%     fclose(ser);
 
 end
 
