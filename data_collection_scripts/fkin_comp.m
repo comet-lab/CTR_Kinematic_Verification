@@ -4,11 +4,11 @@
 num_tubes = 2;      % number of tubes for test
 test_points = 21;   % number of test points
 rotation = true;   % true if test includes rotation
-plotOn = false;     % set true to show plots in the end
+plotOn = true;     % set true to show plots in the end
 
 fpp = 10;           % number of frames per point
 
-robot = Robot();    % robot object (to call forward kinematics of robot)
+robot = Robot(num_tubes, plotOn);    % robot object (to call forward kinematics of robot)
 
 % translation offsets for ground plane
 x_offset = 0.00;

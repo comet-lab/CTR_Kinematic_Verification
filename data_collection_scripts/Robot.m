@@ -1,194 +1,220 @@
 classdef Robot < handle
 
     properties
-%         tube1 = Tube(1.6, 2.2, 50, 100, 10, 100)
-%         tube2 = Tube(3.2, 3.8, 30, 100, 10, 100)
-%         tube3 = Tube(4.8, 5.4, 15, 100, 10, 100)
+        num_tubes = 2
 
-%         tube2 = Tube(3.8*10^-3, 5.0*10^-3, 1/11.65, 100, 50*10^-3, 1935*10^6)
-%         tube1 = Tube(5.6*10^-3, 6.8*10^-3, 1/8.570, 100, 50*10^-3, 1935*10^6)
-
-%         tube3 = Tube(1.0*10^-3, 2.2*10^-3, 1/25, 247.59, 50*10^-3, 1935*10^6)
-%         tube2 = Tube(2.8*10^-3, 4.0*10^-3, 1/14, 116.0, 50*10^-3, 1935*10^6)
-%         tube1 = Tube(4.6*10^-3, 5.8*10^-3, 1/10, 91.21, 50*10^-3, 1935*10^6)
-
-        tube2 = Tube(2.8*10^-3, 4.0*10^-3, 1/14, 161.0*10^-3, 50*10^-3, 1935*10^6)
         tube1 = Tube(4.6*10^-3, 5.8*10^-3, 1/11, 91.21*10^-3, 50*10^-3, 1935*10^6)
-
-      
+        tube2 = Tube(2.8*10^-3, 4.0*10^-3, 1/14, 161.0*10^-3, 50*10^-3, 1935*10^6)
 
         rot_ee = [] %end effector rotation
         pos_ee = [] % end effector translation
 
         Psi = []
         Theta = []
+
+        plotOn = false
     end
 
     methods
-        function self = Robot()
+        function self = Robot(num_tubes, plotOn)
+            self.num_tubes = num_tubes;
+            self.plotOn = plotOn;
         end
 
-        function T = fkin(self, q_var)           
-            % Here q_var = [lin1, lin2, rot1, rot2] or
-            % q _var = [lin1, lin2, lin3, rot1, rot2, rot3]
+        function T = fkin(self, q_var)  
+            % First we get the link lengths 
+            s = get_links(self, q_var)
 
-            % Find link lengths 
-            % First define rho values in terms of joint variables. We
-            % assume that T1 moves with q_var(1). Since we want rho1 to be 0,
-            % we have to subtract q_var(1) from other variables. 
+            % Next we get the values for theta
+            theta = get_theta(self, q_var);
 
-            rho = [0, q_var(2) - q_var(1)]*10^-3;
-%             rho = [0, q_var(2) - q_var(1), q_var(3) - q_var(1)]*10^-3;
-%             d = [self.tube1.d, self.tube2.d, self.tube3.d];
-            d = [self.tube1.d, self.tube2.d];
+            % Now we calculate the phi and kappa values
+            [phi,K] = calculate_phi(self, theta)
 
-            T = [rho(1), rho(2), rho(1)+d(1), rho(2)+d(2)];
-%             T = [rho(1), rho(2), rho(3), rho(1)+d(1), rho(2)+d(2), rho(3) + d(3)];
-            Ts = sort(T);
-            s = [Ts(2)-Ts(1), Ts(3)-Ts(2), Ts(4)-Ts(3)];
+            % Finally we calculate the ending transform
+            T = calculate_transform(self, s, phi, K);
 
-
-
-            % Now we calculate the chi and gamma values. Here we assume two
-            % tubes and 3 links
-        
-            % Calculate chi
-            theta = [q_var(3), q_var(4)];
-
-            x1n = self.tube1.E*self.tube1.I*self.tube1.k*cos(theta(1));
-            x1 = x1n/(self.tube1.E*self.tube1.I + self.tube2.E*self.tube2.I);
-    
-            x2n = self.tube1.E*self.tube1.I*self.tube1.k*cos(theta(1)) + self.tube2.E*self.tube2.I*self.tube2.k*cos(theta(2));
-            x2 = x2n/(self.tube1.E*self.tube1.I + self.tube2.E*self.tube2.I);
-    
-            x3n = self.tube2.E*self.tube2.I*self.tube2.k*cos(theta(2));
-            x3 = x3n/(self.tube2.E*self.tube2.I);
-    
-    
-            y1n = self.tube1.E*self.tube1.I*self.tube1.k*sin(theta(1));
-            y1 = y1n/(self.tube1.E*self.tube1.I + self.tube2.E*self.tube2.I);
-    
-            y2n = self.tube1.E*self.tube1.I*self.tube1.k*sin(theta(1)) + self.tube2.E*self.tube2.I*self.tube2.k*sin(theta(2));
-            y2 = y2n/(self.tube1.E*self.tube1.I + self.tube2.E*self.tube2.I);
-    
-            y3n = self.tube2.E*self.tube2.I*self.tube2.k*sin(theta(2));
-            y3 = y3n/(self.tube2.E*self.tube2.I);
-    
-            phi1 = atan2(y1, x1);
-            phi2 = atan2(y2, x2);
-            phi3 = atan2(y3, x3);
-    
-            phi = [phi1, phi2, phi3];
-    
-            K1 = sqrt(x1*x1 + y1*y1);
-            K2 = sqrt(x2*x2 + y2*y2);
-            K3 = sqrt(x3*x3 + y3*y3);
-    
-            K = [K1, K2, K3];
-%             K = [K1, 1000/92.75, K3];
-    
-             T=[];
-    
-            for i =1:3
-                tt = [[cos(phi(i))*cos(K(i)*s(i)), -sin(phi(i)), cos(phi(i))*sin(K(i)*s(i)), cos(phi(i))*(1-cos(K(i)*s(i)))/K(i)];
-                    [sin(phi(i))*cos(K(i)*s(i)), +cos(phi(i)), sin(phi(i))*sin(K(i)*s(i)), sin(phi(i))*(1-cos(K(i)*s(i)))/K(i)];
-                    [-sin(K(i)*s(i)), 0, cos(K(i)*s(i)), sin(K(i)*s(i))/K(i)];
-                    [0, 0, 0, 1]];
-
-%                 tt = [[(cos(phi(i))*cos(phi(i))*(cos(K(i)*s(i))-1)) + 1, sin(phi(i))*cos(phi(i))*(cos(K(i)*s(i))-1), cos(phi(i))*sin(K(i)*s(i)), cos(phi(i))*(1-cos(K(i)*s(i)))/K(i)];
-%                     [sin(phi(i))*cos(phi(i))*(cos(K(i)*s(i)) -1), + cos(phi(i))*cos(phi(i))*(1 - cos(K(i)*s(i))) + cos(K(i)*s(i)), sin(phi(i))*sin(K(i)*s(i)), sin(phi(i))*(1-cos(K(i)*s(i)))/K(i)];
-%                     [-cos(phi(i))*sin(K(i)*s(i)), -sin(phi(i))*sin(K(i)*s(i)), cos(K(i)*s(i)), sin(K(i)*s(i))/K(i)];
-%                     [0, 0, 0, 1]];
-               
-                
-                T(:,:,i) = tt;
+            if self.plotOn
+                plot_tube(self, q_var, s, phi, K)
             end
         end
 
 
-        function T = fkin_3t(self, q_var)           
+        % Function to find the links
+        function s = get_links(self, q_var)
             % Here q_var = [lin1, lin2, rot1, rot2] or
             % q _var = [lin1, lin2, lin3, rot1, rot2, rot3]
 
-            % Find link lengths 
             % First define rho values in terms of joint variables. We
             % assume that T1 moves with q_var(1). Since we want rho1 to be 0,
             % we have to subtract q_var(1) from other variables. 
 
-%             rho = [0, q_var(2) - q_var(1)]*10^-3;
-            rho = [0, q_var(2) - q_var(1), q_var(3) - q_var(1)]*10^-3;
-            d = [self.tube1.d, self.tube2.d, self.tube3.d];
-%             d = [self.tube1.d, self.tube2.d];
+            if(self.num_tubes == 2)
+                rho = [0, q_var(2) - q_var(1)]*10^-3;
+                d = [self.tube1.d, self.tube2.d];
+                T = [rho(1), rho(2), rho(1)+d(1), rho(2)+d(2)]; 
 
-%             T = [rho(1), rho(2), rho(1)+d(1), rho(2)+d(2)];
-            T = [rho(1), rho(2), rho(3), rho(1)+d(1), rho(2)+d(2), rho(3) + d(3)];
-            Ts = sort(T);
-            s = [Ts(2)-Ts(1), Ts(3)-Ts(2), Ts(4)-Ts(3), Ts(5)-Ts(4), Ts(6)-Ts(5)];
+                Ts = sort(T);
+                s = [Ts(2)-Ts(1), Ts(3)-Ts(2), Ts(4)-Ts(3)];
+            else
+                rho = [0, q_var(2) - q_var(1), q_var(3) - q_var(1)]*10^-3;
+                d = [self.tube1.d, self.tube2.d, self.tube3.d];
+                T = [rho(1), rho(2), rho(3), rho(1)+d(1), rho(2)+d(2), rho(3) + d(3)];
 
+                Ts = sort(T);
 
+                % Not sure I got this line below correct, check when doing
+                % three tubes
+                s = [Ts(2)-Ts(1), Ts(3)-Ts(2), Ts(4)-Ts(3), Ts(5)-Ts(4), Ts(6)-Ts(5)];
+            end
+        end
 
-            % Now we calculate the chi and gamma values. Here we assume two
-            % tubes and 3 links
-        
-            % Calculate chi
-            theta = [q_var(4), q_var(5), q_var(6)];
-
-            x1n = self.tube1.E*self.tube1.I*self.tube1.k*cos(theta(1));
-            x1 = x1n/(self.tube1.E*self.tube1.I + self.tube2.E*self.tube2.I + self.tube3.E*self.tube3.I);
-    
-            x2n = self.tube1.E*self.tube1.I*self.tube1.k*cos(theta(1)) + self.tube2.E*self.tube2.I*self.tube2.k*cos(theta(2));
-            x2 = x2n/(self.tube1.E*self.tube1.I + self.tube2.E*self.tube2.I + self.tube3.E*self.tube3.I);
-    
-            x3n = self.tube2.E*self.tube2.I*self.tube2.k*cos(theta(2));
-            x3 = x3n/(self.tube2.E*self.tube2.I + self.tube3.E*self.tube3.I);
-
-            x4n = self.tube2.E*self.tube2.I*self.tube2.k*cos(theta(2)) + self.tube3.E*self.tube3.I*self.tube3.k*cos(theta(3));
-            x4 = x4n/(self.tube2.E*self.tube2.I + self.tube3.E*self.tube3.I);
-
-            x5n = self.tube3.E*self.tube3.I*self.tube3.k*cos(theta(3));
-            x5 = x5n/(self.tube3.E*self.tube3.I);
-    
-    
-            y1n = self.tube1.E*self.tube1.I*self.tube1.k*sin(theta(1));
-            y1 = y1n/(self.tube1.E*self.tube1.I + self.tube2.E*self.tube2.I + self.tube3.E*self.tube3.I);
-    
-            y2n = self.tube1.E*self.tube1.I*self.tube1.k*sin(theta(1)) + self.tube2.E*self.tube2.I*self.tube2.k*sin(theta(2));
-            y2 = y2n/(self.tube1.E*self.tube1.I + self.tube2.E*self.tube2.I + self.tube3.E*self.tube3.I);
-    
-            y3n = self.tube2.E*self.tube2.I*self.tube2.k*sin(theta(2));
-            y3 = y3n/(self.tube2.E*self.tube2.I + self.tube3.E*self.tube3.I);
-
-            y4n = self.tube2.E*self.tube2.I*self.tube2.k*sin(theta(2)) + self.tube3.E*self.tube3.I*self.tube3.k*sin(theta(3));
-            y4 = y4n/(self.tube2.E*self.tube2.I + self.tube3.E*self.tube3.I);
-
-            y5n = self.tube3.E*self.tube3.I*self.tube3.k*sin(theta(3));
-            y5 = y5n/(self.tube3.E*self.tube3.I);
-    
-            phi1 = atan2(y1, x1);
-            phi2 = atan2(y2, x2);
-            phi3 = atan2(y3, x3);
-            phi4 = atan2(y4, x4);
-            phi5 = atan2(y5, x5);
-    
-            phi = [phi1, phi2, phi3, phi4, phi5];
-    
-            K1 = sqrt(x1*x1 + y1*y1);
-            K2 = sqrt(x2*x2 + y2*y2);
-            K3 = sqrt(x3*x3 + y3*y3);
-            K4 = sqrt(x4*x4 + y4*y4);
-            K5 = sqrt(x5*x5 + y5*y5);
-    
-            K = [K1, K2, K3, K4, K5];
-    
-            T=[];
-    
-            for i =1:5
-                tt = [[cos(phi(i))*cos(K(i)*s(i)), -sin(phi(i)), cos(phi(i))*sin(K(i)*s(i)), cos(phi(i))*(1-cos(K(i)*s(i)))/K(i)];
-                    [sin(phi(i))*cos(K(i)*s(i)), +cos(phi(i)), sin(phi(i))*sin(K(i)*s(i)), sin(phi(i))*(1-cos(K(i)*s(i)))/K(i)];
-                    [-sin(K(i)*s(i)), 0, cos(K(i)*s(i)), sin(K(i)*s(i))/K(i)];
-                    [0, 0, 0, 1]];
+        % Function to get theta values
+        function theta = get_theta(self, q_var)
+            % We know thete from the joint variables
                 
-                T(:,:,i) = tt;
+            if (self.num_tubes == 2)
+                theta = [q_var(3), q_var(4)];
+            else
+                theta = [q_var(4), q_var(5), q_var(6)];
+            end
+        end
+
+
+        % Function to calcualte phi values for two or three tube
+        % configurations
+        function [phi,K] = calculate_phi(self, theta)
+            if(self.num_tubes == 2)
+                x1n = self.tube1.E*self.tube1.I*self.tube1.k*cos(theta(1));
+                x1 = x1n/(self.tube1.E*self.tube1.I + self.tube2.E*self.tube2.I);
+        
+                x2n = self.tube1.E*self.tube1.I*self.tube1.k*cos(theta(1)) + self.tube2.E*self.tube2.I*self.tube2.k*cos(theta(2));
+                x2 = x2n/(self.tube1.E*self.tube1.I + self.tube2.E*self.tube2.I);
+        
+                x3n = self.tube2.E*self.tube2.I*self.tube2.k*cos(theta(2));
+                x3 = x3n/(self.tube2.E*self.tube2.I);
+        
+        
+                y1n = self.tube1.E*self.tube1.I*self.tube1.k*sin(theta(1));
+                y1 = y1n/(self.tube1.E*self.tube1.I + self.tube2.E*self.tube2.I);
+        
+                y2n = self.tube1.E*self.tube1.I*self.tube1.k*sin(theta(1)) + self.tube2.E*self.tube2.I*self.tube2.k*sin(theta(2));
+                y2 = y2n/(self.tube1.E*self.tube1.I + self.tube2.E*self.tube2.I);
+        
+                y3n = self.tube2.E*self.tube2.I*self.tube2.k*sin(theta(2));
+                y3 = y3n/(self.tube2.E*self.tube2.I);
+        
+                phi1 = atan2(y1, x1);
+                phi2 = atan2(y2, x2);
+                phi3 = atan2(y3, x3);
+        
+                phi = [phi1, phi2, phi3];
+
+                K1 = sqrt(x1*x1 + y1*y1);
+                K2 = sqrt(x2*x2 + y2*y2);
+                K3 = sqrt(x3*x3 + y3*y3);
+        
+                K = [K1, K2, K3];
+    %             K = [K1, 1000/92.75, K3];
+            else
+                x1n = self.tube1.E*self.tube1.I*self.tube1.k*cos(theta(1));
+                x1 = x1n/(self.tube1.E*self.tube1.I + self.tube2.E*self.tube2.I + self.tube3.E*self.tube3.I);
+        
+                x2n = self.tube1.E*self.tube1.I*self.tube1.k*cos(theta(1)) + self.tube2.E*self.tube2.I*self.tube2.k*cos(theta(2));
+                x2 = x2n/(self.tube1.E*self.tube1.I + self.tube2.E*self.tube2.I + self.tube3.E*self.tube3.I);
+        
+                x3n = self.tube2.E*self.tube2.I*self.tube2.k*cos(theta(2));
+                x3 = x3n/(self.tube2.E*self.tube2.I + self.tube3.E*self.tube3.I);
+    
+                x4n = self.tube2.E*self.tube2.I*self.tube2.k*cos(theta(2)) + self.tube3.E*self.tube3.I*self.tube3.k*cos(theta(3));
+                x4 = x4n/(self.tube2.E*self.tube2.I + self.tube3.E*self.tube3.I);
+    
+                x5n = self.tube3.E*self.tube3.I*self.tube3.k*cos(theta(3));
+                x5 = x5n/(self.tube3.E*self.tube3.I);
+        
+        
+                y1n = self.tube1.E*self.tube1.I*self.tube1.k*sin(theta(1));
+                y1 = y1n/(self.tube1.E*self.tube1.I + self.tube2.E*self.tube2.I + self.tube3.E*self.tube3.I);
+        
+                y2n = self.tube1.E*self.tube1.I*self.tube1.k*sin(theta(1)) + self.tube2.E*self.tube2.I*self.tube2.k*sin(theta(2));
+                y2 = y2n/(self.tube1.E*self.tube1.I + self.tube2.E*self.tube2.I + self.tube3.E*self.tube3.I);
+        
+                y3n = self.tube2.E*self.tube2.I*self.tube2.k*sin(theta(2));
+                y3 = y3n/(self.tube2.E*self.tube2.I + self.tube3.E*self.tube3.I);
+    
+                y4n = self.tube2.E*self.tube2.I*self.tube2.k*sin(theta(2)) + self.tube3.E*self.tube3.I*self.tube3.k*sin(theta(3));
+                y4 = y4n/(self.tube2.E*self.tube2.I + self.tube3.E*self.tube3.I);
+    
+                y5n = self.tube3.E*self.tube3.I*self.tube3.k*sin(theta(3));
+                y5 = y5n/(self.tube3.E*self.tube3.I);
+        
+                phi1 = atan2(y1, x1);
+                phi2 = atan2(y2, x2);
+                phi3 = atan2(y3, x3);
+                phi4 = atan2(y4, x4);
+                phi5 = atan2(y5, x5);
+        
+                phi = [phi1, phi2, phi3, phi4, phi5];
+
+                K1 = sqrt(x1*x1 + y1*y1);
+                K2 = sqrt(x2*x2 + y2*y2);
+                K3 = sqrt(x3*x3 + y3*y3);
+                K4 = sqrt(x4*x4 + y4*y4);
+                K5 = sqrt(x5*x5 + y5*y5);
+        
+                K = [K1, K2, K3, K4, K5];
+            end
+        end
+
+        function T = calculate_transform(self, s, phi, K)
+            T=[];
+
+            if(self.num_tubes ==2)
+                for i =1:3    
+                    tt = [[(cos(phi(i))*cos(phi(i))*(cos(K(i)*s(i))-1)) + 1, sin(phi(i))*cos(phi(i))*(cos(K(i)*s(i))-1), cos(phi(i))*sin(K(i)*s(i)), cos(phi(i))*(1-cos(K(i)*s(i)))/K(i)];
+                        [sin(phi(i))*cos(phi(i))*(cos(K(i)*s(i)) -1), + cos(phi(i))*cos(phi(i))*(1 - cos(K(i)*s(i))) + cos(K(i)*s(i)), sin(phi(i))*sin(K(i)*s(i)), sin(phi(i))*(1-cos(K(i)*s(i)))/K(i)];
+                        [-cos(phi(i))*sin(K(i)*s(i)), -sin(phi(i))*sin(K(i)*s(i)), cos(K(i)*s(i)), sin(K(i)*s(i))/K(i)];
+                        [0, 0, 0, 1]];
+                   
+                    
+                    T(:,:,i) = tt;
+                end
+            else
+                for i =1:5
+                    tt = [[cos(phi(i))*cos(K(i)*s(i)), -sin(phi(i)), cos(phi(i))*sin(K(i)*s(i)), cos(phi(i))*(1-cos(K(i)*s(i)))/K(i)];
+                        [sin(phi(i))*cos(K(i)*s(i)), +cos(phi(i)), sin(phi(i))*sin(K(i)*s(i)), sin(phi(i))*(1-cos(K(i)*s(i)))/K(i)];
+                        [-sin(K(i)*s(i)), 0, cos(K(i)*s(i)), sin(K(i)*s(i))/K(i)];
+                        [0, 0, 0, 1]];
+                    
+                    T(:,:,i) = tt;
+                end
+            end
+        end
+
+        % This is a function to plot the tube as shown by the forward
+        % kinematics
+        function plot_tube(self, q_var, s, phi, K)
+            addpath CRVisToolkit-main\util\
+            addpath CRVisToolkit-main\ctcr\
+
+            pts_per_seg = 30;
+
+            g = robotindependentmapping(K', deg2rad(phi)', s', pts_per_seg);
+            
+            if(self.num_tubes ==2)
+                % calculate where the tubes will end
+                points = [pts_per_seg 2*pts_per_seg - pts_per_seg* (s(2)/self.tube1.d)];
+                try
+                    draw_ctcr(g,points,[self.tube1.od self.tube2.od]);
+                catch
+                    disp("Invalid position to plot")
+                end
+            else
+                translation_frac = [q_var(1)/self.tube1.d q_var(2)/self.tube2.d; q_var(3)/self.tube3.d];
+
+                points = int16(translation_frac * pts_per_seg);
+
+                draw_ctcr(g,points,[self.tube1.od self.tube2.od]);
             end
         end
 
@@ -262,25 +288,6 @@ classdef Robot < handle
 
             U = t_u+x_u+y_u;
             
-        end
-
-        function psi = psi_eqn(self, alpha)
-            
-            I = [self.tube1.I, self.tube2.I];
-            E = self.tube1.E;
-            G = self.tube1.G;
-            J = [self.tube1.J, self.tube2.J];
-            Ls = [self.tube1.l, self.tube2.l];
-            k = [self.tube1.k, self.tube2.k];
-            
-            c1 = G*J(1)/Ls(2);
-            c2 = G*J(1)/Ls(2);
-            c3 = (E*E*I(1)*I(2)*k(1)*k(2))/(E*I(1)+E*I(2));
-
-            t_exp = psi
-
-
-
         end
 
 
