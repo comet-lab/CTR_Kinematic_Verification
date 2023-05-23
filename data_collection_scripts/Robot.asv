@@ -197,16 +197,16 @@ classdef Robot < handle
             addpath CRVisToolkit-main\util\
             addpath CRVisToolkit-main\ctcr\
 
-            pts_per_seg = 80;
+            pts_per_seg = 30;
 
             g = robotindependentmapping(K', deg2rad(phi)', s', pts_per_seg);
             
             if(self.num_tubes ==2)
                 % calculate where the tubes will end
 %                 points = [pts_per_seg 2*pts_per_seg - pts_per_seg* (s(2)/self.tube1.d)];
-                points = [pts_per_seg 2*pts_per_seg 3*pts_per_seg];
+                points = [30 60 90];
                 try
-                    draw_ctcr(g,points,[self.tube1.od self.tube1.od self.tube2.od]);
+                    draw_ctcr(g,points,[self.tube1.od self.tube2.od]);
                 catch
                     disp("Invalid position to plot")
                 end
