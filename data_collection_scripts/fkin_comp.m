@@ -2,13 +2,13 @@
 
 % Initialize test information and flags
 num_tubes = 2;      % number of tubes for test
-test_points = 333;   % number of test points
+test_points = 21;   % number of test points
 rotation = true;   % true if test includes rotation
-plotOn = false;     % set true to show plots in the end
+plotOn = true;     % set true to show plots in the end
 
 fpp = 10;           % number of frames per point
 
-robot = Robot();    % robot object (to call forward kinematics of robot)
+robot = Robot(num_tubes, plotOn);    % robot object (to call forward kinematics of robot)
 
 % translation offsets for ground plane
 x_offset = 0.00;
@@ -28,7 +28,7 @@ z_ee = 0.005;
 
 
 % enter filename / filepath if different folder
-filename = '19_05_23-13_23_2-tubes_rotate';
+filename = 'data_files/02_05_23-18_05_2-tubes_in-plane-bending';
 % filename = 'data_files/18_04_23-15_27_2-tubes_in-plane-bending';  
 % filename = 'data_files/14_04_23-16_51_2-tubes_in-plane-bending';
 
@@ -41,12 +41,12 @@ q_2tubes = table2array([T1(1:fpp:fpp*test_points,8),T1(1:fpp:fpp*test_points,9),
 % ee -> end effector / tip
 
 % % data frame is x, y, z, qw, qx, qy, qz
-% ee_mocap_data = table2array([T1(1:test_points*fpp,1),T1(1:test_points*fpp,2),T1(1:test_points*fpp,3), ...
-%                     T1(1:test_points*fpp,4), T1(1:test_points*fpp,5),T1(1:test_points*fpp,6), T1(1:test_points*fpp,7)]);
+ee_mocap_data = table2array([T1(1:test_points*fpp,1),T1(1:test_points*fpp,2),T1(1:test_points*fpp,3), ...
+                    T1(1:test_points*fpp,4), T1(1:test_points*fpp,5),T1(1:test_points*fpp,6), T1(1:test_points*fpp,7)]);
 
 % data frame is x, y, z, qw, qx, qy, qz
-ee_mocap_data = table2array([T1(1:test_points*fpp,14),T1(1:test_points*fpp,15),T1(1:test_points*fpp,16), ...
-                    T1(1:test_points*fpp,17), T1(1:test_points*fpp,18),T1(1:test_points*fpp,19), T1(1:test_points*fpp,20)]);
+% ee_mocap_data = table2array([T1(1:test_points*fpp,14),T1(1:test_points*fpp,15),T1(1:test_points*fpp,16), ...
+%                     T1(1:test_points*fpp,17), T1(1:test_points*fpp,18),T1(1:test_points*fpp,19), T1(1:test_points*fpp,20)]);
 
 
 
