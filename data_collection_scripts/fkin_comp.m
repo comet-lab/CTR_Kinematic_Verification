@@ -51,7 +51,7 @@ ee_mocap_data = table2array([T1(1:test_points*fpp,1),T1(1:test_points*fpp,2),T1(
 
 
 
-for i = 1:4   
+for i = 1:test_points   
     ee_mocap_data_avg(i,:) = mean(ee_mocap_data(((i-1)*fpp)+1:i*fpp,:));
     % the average data has average quaternions that may not be normalised
 
