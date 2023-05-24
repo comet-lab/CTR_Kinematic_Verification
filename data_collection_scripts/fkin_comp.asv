@@ -51,7 +51,7 @@ ee_mocap_data = table2array([T1(1:test_points*fpp,1),T1(1:test_points*fpp,2),T1(
 
 
 
-for i = 1:test_points   
+for i = 1:4   
     ee_mocap_data_avg(i,:) = mean(ee_mocap_data(((i-1)*fpp)+1:i*fpp,:));
     % the average data has average quaternions that may not be normalised
 
@@ -116,8 +116,10 @@ for i = 1:test_points
         points = [pts_per_seg 2*pts_per_seg 3*pts_per_seg 4*pts_per_seg];
 
         g = robotindependentmapping(kappa', deg2rad(phi)', lls', pts_per_seg);
-        d = [robot.tube1.od robot.tube1.od robot.tube1.od robot.tube2.od];
-        fig = draw_ctcr_cust(g,points,d,ee_fk_tf(:,:,i),ee_rb_tf(:,:,i));
+
+        fig = draw_ctcr(g,points,[robot.tube1.od robot.tube1.od robot.tube1.od robot.tube2.od]);
+        hold on
+        quiver
     end
 
 end

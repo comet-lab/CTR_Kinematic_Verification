@@ -46,8 +46,8 @@ classdef Robot < handle
         end
 
         % get values for plotting
-        function [lls, phi, kappa] = get_lls_phi_kappa(self)
-            lls = self.lls;
+        function [theta, phi, kappa] = get_theta_phi_kappa(self)
+            theta = self.theta;
             phi = self.phi;
             kappa = self.kappa;
         end

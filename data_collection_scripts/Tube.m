@@ -31,7 +31,7 @@ classdef Tube < handle
         end
 
         function params = get_tube_params(self)
-            params = [self.id, self.od, self.r, self.k, self.d, self.E, slef.I];
+            params = [self.id, self.od, self.r, self.k, self.d, self.E, self.I];
         end
     end
 end
