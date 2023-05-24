@@ -9,10 +9,11 @@ classdef Robot < handle
         rot_ee = [] %end effector rotation
         pos_ee = [] % end effector translation
 
-        Psi = []
-        Theta = []
-
         plotOn = false
+
+        lls = []
+        phi = []
+        kappa = []
     end
 
     methods
@@ -37,6 +38,18 @@ classdef Robot < handle
             if self.plotOn
                 plot_tube(self, q_var, s, phi, K)
             end
+
+            self.lls = s;
+            self.phi = phi;
+            self.kappa = K;
+
+        end
+
+        % get values for plotting
+        function [theta, phi, kappa] = get_theta_phi_kappa(self)
+            theta = self.theta;
+            phi = self.phi;
+            kappa = self.kappa;
         end
 
 
@@ -197,16 +210,16 @@ classdef Robot < handle
             addpath CRVisToolkit-main\util\
             addpath CRVisToolkit-main\ctcr\
 
-            pts_per_seg = 30;
+            pts_per_seg = 80;
 
             g = robotindependentmapping(K', deg2rad(phi)', s', pts_per_seg);
             
             if(self.num_tubes ==2)
                 % calculate where the tubes will end
 %                 points = [pts_per_seg 2*pts_per_seg - pts_per_seg* (s(2)/self.tube1.d)];
-                points = [30 60 90];
+                points = [pts_per_seg 2*pts_per_seg 3*pts_per_seg];
                 try
-                    draw_ctcr(g,points,[self.tube1.od self.tube2.od]);
+                    draw_ctcr(g,points,[self.tube1.od self.tube1.od self.tube2.od]);
                 catch
                     disp("Invalid position to plot")
                 end

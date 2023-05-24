@@ -116,8 +116,10 @@ for i = 1:4
         points = [pts_per_seg 2*pts_per_seg 3*pts_per_seg 4*pts_per_seg];
 
         g = robotindependentmapping(kappa', deg2rad(phi)', lls', pts_per_seg);
-        d = [robot.tube1.od robot.tube1.od robot.tube1.od robot.tube2.od];
-        fig = draw_ctcr_cust(g,points,d,ee_fk_tf(:,:,i),ee_rb_tf(:,:,i));
+
+        fig = draw_ctcr(g,points,[robot.tube1.od robot.tube1.od robot.tube1.od robot.tube2.od]);
+        hold on
+        quiver
     end
 
 end

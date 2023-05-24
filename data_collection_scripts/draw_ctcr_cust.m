@@ -1,4 +1,4 @@
-function [fig] = draw_ctcr(g,tube_end,r_tube,options)
+function [fig] = draw_ctcr_cust(g,tube_end,r_tube,expected,actual, options)
 % DRAW_CTCR Creates a figure of a concentric tube continuum robot (ctcr)
 %
 %   Takes a matrix with nx16 entries, where n is the number
@@ -29,9 +29,11 @@ function [fig] = draw_ctcr(g,tube_end,r_tube,options)
         g (:,16) double %backbone curve (transformation matrices stored columnwise)
         tube_end (1,:) uint8 %tube end indices
         r_tube (1,:) double % tube radius
+        expected (4,4) double % expected end point
+        actual (4,4) double % actual end point
         options.tipframe (1,1) {mustBeNumericOrLogical} = 1
         options.baseframe (1,1) {mustBeNumericOrLogical} = 0
-        options.projections (1,1) {mustBeNumericOrLogical} = 1
+        options.projections (1,1) {mustBeNumericOrLogical} = 0
         options.baseplate (1,1) {mustBeNumericOrLogical} = 1
     end
 
@@ -142,5 +144,13 @@ function [fig] = draw_ctcr(g,tube_end,r_tube,options)
         quiver3(0,0,0,0,1,0,0.01,'LineWidth',3,'Color',[0 1 0]);
         quiver3(0,0,0,0,0,1,0.01,'LineWidth',3,'Color',[0 0 1]);
     end
-
-
+    %% Expected Frame
+    plot3(expected(1,4),expected(2,4),expected(3,4),'o','MarkerSize',10,'MarkerFaceColor','#2596be');
+    quiver3(expected(1,4),expected(2,4),expected(3,4),expected(1,1),expected(2,1),expected(3,1),0.01,'LineWidth',3,'Color',[1 0 0]);
+    quiver3(expected(1,4),expected(2,4),expected(3,4),expected(1,2),expected(2,2),expected(3,2),0.01,'LineWidth',3,'Color',[0 1 0])
+    quiver3(expected(1,4),expected(2,4),expected(3,4),expected(1,3),expected(2,3),expected(3,3),0.01,'LineWidth',3,'Color',[0 0 1]);
+    %% Actual Frame
+    plot3(actual(1,4),actual(2,4),actual(3,4),'o','MarkerSize',10,'MarkerFaceColor','#851a3b');
+    quiver3(actual(1,4),actual(2,4),actual(3,4),actual(1,1),actual(2,1),actual(3,1),0.01,'LineWidth',3,'Color',[1 0 0]);
+    quiver3(actual(1,4),actual(2,4),actual(3,4),actual(1,2),actual(2,2),actual(3,2),0.01,'LineWidth',3,'Color',[0 1 0])
+    quiver3(actual(1,4),actual(2,4),actual(3,4),actual(1,3),actual(2,3),actual(3,3),0.01,'LineWidth',3,'Color',[0 0 1]);

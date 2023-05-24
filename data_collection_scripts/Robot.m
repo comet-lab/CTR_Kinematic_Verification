@@ -9,10 +9,11 @@ classdef Robot < handle
         rot_ee = [] %end effector rotation
         pos_ee = [] % end effector translation
 
-        Psi = []
-        Theta = []
-
         plotOn = false
+
+        lls = []
+        phi = []
+        kappa = []
     end
 
     methods
@@ -37,6 +38,18 @@ classdef Robot < handle
             if self.plotOn
                 plot_tube(self, q_var, s, phi, K)
             end
+
+            self.lls = s;
+            self.phi = phi;
+            self.kappa = K;
+
+        end
+
+        % get values for plotting
+        function [lls, phi, kappa] = get_lls_phi_kappa(self)
+            lls = self.lls;
+            phi = self.phi;
+            kappa = self.kappa;
         end
 
 
