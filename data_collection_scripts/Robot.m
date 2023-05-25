@@ -258,19 +258,30 @@ classdef Robot < handle
             b1 = c3/c1;
             b2 = c1/c2;
 
-            disp(theta);
+%             disp(theta);
+            
+            % eqn for psi 1
+%             taylor_expansion = taylor(link_len(2)*b1*sin(theta(2) + b2*theta(1) -(1+b2)*x), x)
+%             psi_eqn = taylor_expansion + theta(1) - x == 0
 
-            taylor_expansion = taylor(link_len(2)*b1*sin(theta(2) + b2*theta(1) -(1+b2)*x), x)
-            psi_eqn = taylor_expansion + theta(1) - x == 0
+            % equation rewritten for psi 2
+            taylor_expansion = link_len(2)*b1*b2*sin(x - theta(1) + (1/b2)*(x-theta(2)))        % not this not a expansion, but the eqn itself
+            psi_eqn = taylor_expansion + x - theta(2) == 0
 
-%             taylor_expansion = x^5 +x^3 - 2;
-            psi_all = solve(psi_eqn, x, 'MaxDegree',5);
+%             psi_all = solve(psi_eqn, x,"Real",true, "PrincipalValue",true, "MaxDegree", 4); 
+            
+            psi_all = vpasolve(psi_eqn, x, psi_prev(2))   % numerical solver for equation and finds a solution near psi_prev(2)
+            % the numerical solver also solves the taylor expansion which
+            % has 1 real and 4 complex roots
+
+            % the line below solves the non-linear eqn, but does not give explicit solutions for the taylor expansion
+%             psi_all = solve(psi_eqn, x)
 %             disp(psi1);
-            disp(eval(psi_all));
-            psi1 = interp1(psi_all, psi_all, psi_prev(1), 'nearest')
-            psi2 = c1/c2*(theta(1) - psi1) + theta(2);
+            
+%             psi2 = interp1(psi_all, psi_all, psi_prev(2), 'nearest')
+%             psi2 = c1/c2*(theta(1) - psi1) + theta(2);
 
-            psi = [psi1, psi2];
+            psi = [0, psi2]; %forcing psi 1 as zero, based on the experiment
 
         end
 
