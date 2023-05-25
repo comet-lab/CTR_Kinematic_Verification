@@ -36,6 +36,7 @@ classdef Robot < handle
 
             if self.plotOn
                 plot_tube(self, q_var, s, phi, K)
+                w = waitforbuttonpress;
             end
         end
 
@@ -240,7 +241,7 @@ classdef Robot < handle
 
         end
 
-        function psi = analytical_soln(self, theta, link_len)
+        function psi = analytical_soln(self, theta, link_len, psi_prev)
             syms x;
 
             I = [self.tube1.I, self.tube2.I];
@@ -257,9 +258,16 @@ classdef Robot < handle
             b1 = c3/c1;
             b2 = c1/c2;
 
-            taylor_expansion = (link_len(2)*b1*sin(theta(2) + b2*theta(1) -(1+b2)*x)) + theta(1) - x;
+            disp(theta);
 
-            psi1 = solve(taylor_expansion == 0, x);
+            taylor_expansion = taylor(link_len(2)*b1*sin(theta(2) + b2*theta(1) -(1+b2)*x), x)
+            psi_eqn = taylor_expansion + theta(1) - x == 0
+
+%             taylor_expansion = x^5 +x^3 - 2;
+            psi_all = solve(psi_eqn, x, 'MaxDegree',5);
+%             disp(psi1);
+            disp(eval(psi_all));
+            psi1 = interp1(psi_all, psi_all, psi_prev(1), 'nearest')
             psi2 = c1/c2*(theta(1) - psi1) + theta(2);
 
             psi = [psi1, psi2];
@@ -309,7 +317,7 @@ classdef Robot < handle
         end
 
 
-        function T = fkin_tors(self, q_var)           
+        function T = fkin_tors(self, q_var, psi_prev)           
             
             % First we get the link lengths
             s = get_links(self, q_var);
@@ -320,7 +328,9 @@ classdef Robot < handle
             
             % we calculate psi using energy minimisation
 %             psi = tors_comp(self, theta, s);
-            psi = analytical_soln(self, theta, s);
+            
+            % we calculate psi using the analytical solution
+            psi = analytical_soln(self, theta, s, psi_prev);
             self.Psi = psi;
 
             % Now we calculate the phi and kappa values
@@ -331,6 +341,7 @@ classdef Robot < handle
 
             if self.plotOn
                 plot_tube(self, q_var, s, phi, K)
+                w = waitforbuttonpress;
             end
             
         end

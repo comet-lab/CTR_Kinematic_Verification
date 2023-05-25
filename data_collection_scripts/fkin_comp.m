@@ -25,6 +25,7 @@ y_ee = 0.0;
 z_ee = 0.005;
 
 
+psi_seed = [0,0];
 
 
 % enter filename / filepath if different folder
@@ -82,10 +83,11 @@ for i = 1:test_points
     % x 3            -> three transformations for each joint pose
     % x n            -> iterating trhough the test points
 %     TT(:,:,:,i) = robot.fkin(q_2tubes(i,:));
-    TT(:,:,:,i) = robot.fkin_tors(q_2tubes(i,:));
+    TT(:,:,:,i) = robot.fkin_tors(q_2tubes(i,:), psi_seed);
 
     theta(i,:) = (robot.Theta).';
     psi(i,:) = (robot.Psi).';
+    psi_seed = psi;
 
     
     f1_f0 = [[eye(3),[0,0,q_2tubes(i,1)*10^-3]'];[0,0,0,1]];
