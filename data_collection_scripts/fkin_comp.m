@@ -2,7 +2,7 @@
 
 % Initialize test information and flags
 num_tubes = 2;      % number of tubes for test
-test_points = 333;   % number of test points
+test_points = 21;   % number of test points
 rotation = true;   % true if test includes rotation
 plotOn = false;     % set true to show plots in the end
 
@@ -30,8 +30,10 @@ psi_seed = [0,0];
 
 % enter filename / filepath if different folder
 % filename = 'data_files/02_05_23-18_05_2-tubes_in-plane-bending';
-filename = 'data_files/19_05_23-13_23_2-tubes_rotate';  
-% filename = 'data_files/19_05_23-12_35_2-tubes_rotate';
+% filename = 'data_files/19_05_23-13_23_2-tubes_rotate';  
+
+filename = 'data_files/19_05_23-12_35_2-tubes_rotate';
+% filename = '18_04_23-16_13_2-tubes_rotate';
 
 T1 = readtable(filename);
 
@@ -41,13 +43,13 @@ q_2tubes = table2array([T1(1:fpp:fpp*test_points,8),T1(1:fpp:fpp*test_points,9),
 
 % ee -> end effector / tip
 
-% % % data frame is x, y, z, qw, qx, qy, qz
-% ee_mocap_data = table2array([T1(1:test_points*fpp,1),T1(1:test_points*fpp,2),T1(1:test_points*fpp,3), ...
-%                     T1(1:test_points*fpp,4), T1(1:test_points*fpp,5),T1(1:test_points*fpp,6), T1(1:test_points*fpp,7)]);
+% % data frame is x, y, z, qw, qx, qy, qz
+ee_mocap_data = table2array([T1(1:test_points*fpp,1),T1(1:test_points*fpp,2),T1(1:test_points*fpp,3), ...
+                    T1(1:test_points*fpp,4), T1(1:test_points*fpp,5),T1(1:test_points*fpp,6), T1(1:test_points*fpp,7)]);
 
-% data frame is x, y, z, qw, qx, qy, qz
-ee_mocap_data = table2array([T1(1:test_points*fpp,14),T1(1:test_points*fpp,15),T1(1:test_points*fpp,16), ...
-                    T1(1:test_points*fpp,17), T1(1:test_points*fpp,18),T1(1:test_points*fpp,19), T1(1:test_points*fpp,20)]);
+% % data frame is x, y, z, qw, qx, qy, qz
+% ee_mocap_data = table2array([T1(1:test_points*fpp,14),T1(1:test_points*fpp,15),T1(1:test_points*fpp,16), ...
+%                     T1(1:test_points*fpp,17), T1(1:test_points*fpp,18),T1(1:test_points*fpp,19), T1(1:test_points*fpp,20)]);
 
 
 
@@ -82,12 +84,12 @@ for i = 1:test_points
     % 4x 4           -> tranformation matrix
     % x 3            -> three transformations for each joint pose
     % x n            -> iterating trhough the test points
-%     TT(:,:,:,i) = robot.fkin(q_2tubes(i,:));
+    TT_w(:,:,:,i) = robot.fkin(q_2tubes(i,:));
     TT(:,:,:,i) = robot.fkin_tors(q_2tubes(i,:), psi_seed);
 
     theta(i,:) = (robot.Theta).';
     psi(i,:) = (robot.Psi).';
-    psi_seed = psi;
+    psi_seed = psi(i,:);
 
     
     f1_f0 = [[eye(3),[0,0,q_2tubes(i,1)*10^-3]'];[0,0,0,1]];
@@ -95,6 +97,9 @@ for i = 1:test_points
     % contains the tranformations for the end-effector for all testpoints
     % (4 x 4 x n)
     ee_fk_tf(:,:,i) = f1_f0*TT(:,:,1,i)*TT(:,:,2,i)*TT(:,:,3,i);
+
+    ee_fkw_tf(:,:,i) = f1_f0*TT_w(:,:,1,i)*TT_w(:,:,2,i)*TT_w(:,:,3,i);
+    ee_fkw_pos(i,:) = [ee_fkw_tf(1,4,i); ee_fkw_tf(2,4,i); ee_fkw_tf(3,4,i)];
 
     % contains x,y,z for the end-effector for all testpoints 
     % (n x 3)

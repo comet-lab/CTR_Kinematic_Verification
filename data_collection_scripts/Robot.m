@@ -265,12 +265,12 @@ classdef Robot < handle
 %             psi_eqn = taylor_expansion + theta(1) - x == 0
 
             % equation rewritten for psi 2
-            taylor_expansion = link_len(2)*b1*b2*sin(x - theta(1) + (1/b2)*(x-theta(2)))        % not this not a expansion, but the eqn itself
-            psi_eqn = taylor_expansion + x - theta(2) == 0
+            taylor_expansion = link_len(2)*b1*b2*sin(x - theta(1) + (1/b2)*(x-theta(2)));        % not this not a expansion, but the eqn itself
+            psi_eqn = taylor_expansion + x - theta(2) == 0;
 
 %             psi_all = solve(psi_eqn, x,"Real",true, "PrincipalValue",true, "MaxDegree", 4); 
             
-            psi_all = vpasolve(psi_eqn, x, psi_prev(2))   % numerical solver for equation and finds a solution near psi_prev(2)
+            psi2 = vpasolve(psi_eqn, x, psi_prev(2));   % numerical solver for equation and finds a solution near psi_prev(2)
             % the numerical solver also solves the taylor expansion which
             % has 1 real and 4 complex roots
 
@@ -281,7 +281,7 @@ classdef Robot < handle
 %             psi2 = interp1(psi_all, psi_all, psi_prev(2), 'nearest')
 %             psi2 = c1/c2*(theta(1) - psi1) + theta(2);
 
-            psi = [0, psi2]; %forcing psi 1 as zero, based on the experiment
+            psi = [0, double(psi2)]; %forcing psi 1 as zero, based on the experiment
 
         end
 
@@ -338,10 +338,10 @@ classdef Robot < handle
             self.Theta  = theta;
             
             % we calculate psi using energy minimisation
-%             psi = tors_comp(self, theta, s);
+            psi = tors_comp(self, theta, s);
             
             % we calculate psi using the analytical solution
-            psi = analytical_soln(self, theta, s, psi_prev);
+%             psi = analytical_soln(self, theta, s, psi_prev);
             self.Psi = psi;
 
             % Now we calculate the phi and kappa values
