@@ -32,8 +32,8 @@ psi_seed = [0,0];
 % filename = 'data_files/02_05_23-18_05_2-tubes_in-plane-bending';
 % filename = 'data_files/19_05_23-13_23_2-tubes_rotate';  
 
-filename = 'data_files/19_05_23-12_35_2-tubes_rotate';
-% filename = '18_04_23-16_13_2-tubes_rotate';
+% filename = 'data_files/19_05_23-12_35_2-tubes_rotate';
+filename = 'data_files/18_04_23-16_13_2-tubes_rotate';
 
 T1 = readtable(filename);
 
@@ -47,7 +47,7 @@ q_2tubes = table2array([T1(1:fpp:fpp*test_points,8),T1(1:fpp:fpp*test_points,9),
 ee_mocap_data = table2array([T1(1:test_points*fpp,1),T1(1:test_points*fpp,2),T1(1:test_points*fpp,3), ...
                     T1(1:test_points*fpp,4), T1(1:test_points*fpp,5),T1(1:test_points*fpp,6), T1(1:test_points*fpp,7)]);
 
-% % data frame is x, y, z, qw, qx, qy, qz
+% data frame is x, y, z, qw, qx, qy, qz
 % ee_mocap_data = table2array([T1(1:test_points*fpp,14),T1(1:test_points*fpp,15),T1(1:test_points*fpp,16), ...
 %                     T1(1:test_points*fpp,17), T1(1:test_points*fpp,18),T1(1:test_points*fpp,19), T1(1:test_points*fpp,20)]);
 
@@ -110,8 +110,11 @@ for i = 1:test_points
 
     pos_error(i,:) = norm(ee_fk_pos(i,:)) - norm(ee_rb_pos(i,:));
     pos_c_error(i,:) = (ee_fk_pos(i,:) - ee_rb_pos(i,:))*10^3;
+    norm1(i,1) = norm(ee_fk_pos(i,:));
+    norm2(i,1) = norm(ee_rb_pos(i,:));
 
 end
 
 % pos_error_t = rmse(ee_fk_pos, ee_mocap_pos);
 pos_error_t = rmse(ee_fk_pos, ee_rb_pos);
+rmse_t = rmse(norm1, norm2);

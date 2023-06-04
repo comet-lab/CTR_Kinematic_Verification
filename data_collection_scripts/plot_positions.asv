@@ -51,9 +51,9 @@ sgtitle("XYZ Positions")
 
 
 figure(2)
-boxplot(abs(norm1 - norm2));
+boxplot(norm1 - norm2,)
 set(gca,'FontSize',16,'fontWeight','bold')
 set(findall(gcf,'type','text'),'FontSize',16,'fontWeight','bold')
-xlabel("Error in tip position")
+xlabel("Coordinates axes")
 ylabel("[mm]");
-title("Experiment 3 (21 datapoints)");
+title("Experiment 2 (21 datapoints)");

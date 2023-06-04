@@ -7,9 +7,9 @@ COMPort = "COM3";
 % Create a random list of joint variables
 generator = Jointspace_Generator();
 
-% joint_list = generator.get_new_random_positions(num_pts);
+joint_list = generator.get_new_random_positions(num_pts);
 % joint_list = generator.get_spaced_random_positions(num_pts);
-joint_list = generator.get_all_spaced_positions_2tubes(num_pts);
+% joint_list = generator.get_all_spaced_positions_2tubes(num_pts);
 
 
 gcode_list = generator.positions_gcode_list();

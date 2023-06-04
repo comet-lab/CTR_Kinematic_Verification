@@ -15,17 +15,17 @@ range_d = 1:test_points;
 
 % plot(range_d, [abs(d_psi), abs(ang_rb)]);
 figure(1)
-boxplot([abs(d_psi(:,1)), abs(d_theta(:,1)), abs(d_psi(:,1))] - [abs(d_ang), abs(d_ang), abs(d_theta(:,1))], 'Labels',{'psi vs mocap', 'theta vs mocap', 'psi vs theta'})
+boxplot(abs([abs(d_psi(:,1)), abs(d_theta(:,1)), abs(d_psi(:,1))] - [abs(d_ang), abs(d_ang), abs(d_theta(:,1))]), 'Labels',{'psi vs mocap', 'theta vs mocap', 'psi vs theta'})
 
 set(gca,'FontSize',16,'fontWeight','bold')
 set(findall(gcf,'type','text'),'FontSize',16,'fontWeight','bold')
 xlabel("error in rotation btw")
 ylabel("[deg]");
-title("data: May 19 rotation exp");
+title("Experiment 3 (21 datapoints)");
 
 
 figure(2)
-boxplot([abs(d_ang)] - [abs(e_ang)], 'Labels',{'fkin vs mocap'})
+boxplot(abs([abs(d_ang)] - [abs(e_ang)]), 'Labels',{'fkin vs mocap'})
 
 set(gca,'FontSize',16,'fontWeight','bold')
 set(findall(gcf,'type','text'),'FontSize',16,'fontWeight','bold')
