@@ -20,7 +20,7 @@ classdef Pose < handle
         end
         
         function command = get_gcode_for_pose(self)
-            command = "G0 X" + string(self.lin1 * 16) + " Y" + string(self.lin2 * 16) + " Z" + string(self.lin3 * 16) + " A" + string(self.rot1) + " B" + string(self.rot2) + " C" + string(self.rot3);
+            command = "X" + string(self.lin1 * 16) + " Y" + string(self.lin2 * 16) + " Z" + string(self.lin3 * 16) + " A" + string(self.rot1) + " B" + string(self.rot2) + " C" + string(self.rot3);
         end
         
         function command = get_string_for_pose(self)
