@@ -2,7 +2,7 @@
 % Change the COM port to be the one that your device attaches to the
 % Octopus Board
 
-COMPort = "COM3";
+COMPort = "COM10";
 
 % If you get an error saying that it was unable to connect to the serial
 % port, first unplug and replug the USB. Try again. If that doesn't work,
@@ -22,7 +22,7 @@ fopen(ser);
 
 % fprintf(ser, 'G0 X16 Y0 Z0 A0 B0 C0\n');
 
-fprintf(ser, 'G0 X0 Y-320 Z-2000 A0 B0 C0\n');
+fprintf(ser, 'G0 X Y-320 Z-2000 A0 B0 C0\n');
 
 %% Set the current position to home (run as many times as needed)
 % This resets the "home" position to the given position. Pass all 0s as

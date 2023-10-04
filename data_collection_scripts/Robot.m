@@ -6,7 +6,7 @@ classdef Robot < handle
         tube1 = Tube(4.6*10^-3, 5.8*10^-3, 1/11, 91.21*10^-3, 50*10^-3, 1935*10^6)
         tube2 = Tube(2.8*10^-3, 4.0*10^-3, 1/14, 161.0*10^-3, 50*10^-3, 1935*10^6)
 
-        rot_ee = [] %end effector rotation
+        rot_ee = [] % end effector rotation
         pos_ee = [] % end effector translation
 
         plotOn = false
@@ -22,26 +22,26 @@ classdef Robot < handle
             self.plotOn = plotOn;
         end
 
+        % Here we calculate the kinematics of a full CTR
         function T = fkin(self, q_var)  
-            % First we get the link lengths 
-            s = get_links(self, q_var);
-
-            % Next we get the values for theta
+            disp(q_var)
+            % First we get the rho and theta avlues from q_var
+            rho = get_rho_values(self, q_var);
             theta = get_theta(self, q_var);
 
+            % Next, we use rho to get the link lengths
+            self.lls = get_links(self, rho);
+
             % Now we calculate the phi and kappa values
-            [phi,K] = calculate_phi(self, theta);
+            [self.phi,self.kappa] = calculate_phi_and_kappa(self, theta);
 
             % Finally we calculate the ending transform
-            T = calculate_transform(self, s, phi, K);
+            T = calculate_transform(self, self.lls, self.phi, self.kappa);
+            disp(T)
 
             if self.plotOn
-                plot_tube(self, q_var, s, phi, K)
+                plot_tube(self, q_var, self.lls, self.phi, self.kappa)
             end
-
-            self.lls = s;
-            self.phi = phi;
-            self.kappa = K;
 
         end
 
@@ -52,9 +52,9 @@ classdef Robot < handle
             kappa = self.kappa;
         end
 
-
-        % Function to find the links
-        function s = get_links(self, q_var)
+        % Get rho values from joint positions
+        % Return rho (1 x i vector, i is num tubes)
+        function rho = get_rho_values(self, q_var)
             % Here q_var = [lin1, lin2, rot1, rot2] or
             % q _var = [lin1, lin2, lin3, rot1, rot2, rot3]
 
@@ -64,13 +64,22 @@ classdef Robot < handle
 
             if(self.num_tubes == 2)
                 rho = [0, q_var(2) - q_var(1)]*10^-3;
+            else
+                rho = [0, q_var(2) - q_var(1), q_var(3) - q_var(1)]*10^-3;
+            end
+
+        end
+
+        % Function to find the links
+        function s = get_links(self, rho)
+
+            if(self.num_tubes == 2)
                 d = [self.tube1.d, self.tube2.d];
                 T = [rho(1), rho(2), rho(1)+d(1), rho(2)+d(2)]; 
 
                 Ts = sort(T);
                 s = [Ts(2)-Ts(1), Ts(3)-Ts(2), Ts(4)-Ts(3)];
             else
-                rho = [0, q_var(2) - q_var(1), q_var(3) - q_var(1)]*10^-3;
                 d = [self.tube1.d, self.tube2.d, self.tube3.d];
                 T = [rho(1), rho(2), rho(3), rho(1)+d(1), rho(2)+d(2), rho(3) + d(3)];
 
@@ -83,6 +92,7 @@ classdef Robot < handle
         end
 
         % Function to get theta values
+        % Returns theta (1 x j vector where j is num links)
         function theta = get_theta(self, q_var)
             % We know thete from the joint variables
                 
@@ -96,7 +106,9 @@ classdef Robot < handle
 
         % Function to calcualte phi values for two or three tube
         % configurations
-        function [phi,K] = calculate_phi(self, theta)
+        % Should return phi (1 x j vector, where j is num links)
+        % and K (1 x j vector)
+        function [phi,K] = calculate_phi_and_kappa(self, theta)
             if(self.num_tubes == 2)
                 x1n = self.tube1.E*self.tube1.I*self.tube1.k*cos(theta(1));
                 x1 = x1n/(self.tube1.E*self.tube1.I + self.tube2.E*self.tube2.I);

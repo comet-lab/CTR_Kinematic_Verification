@@ -5,7 +5,7 @@ num_tubes = 2;      % number of tubes for test
 test_points = 21;   % number of test points
 rotation = true;   % true if test includes rotation
 plotOnTube = false;     % set to true to show plots of just the tubes
-plotOnFull = true;     % set to true to show plots of tubes with epected end effector positions
+plotOnFull = false;     % set to true to show plots of tubes with epected end effector positions
 
 fpp = 10;           % number of frames per point
 
