@@ -2,6 +2,7 @@
 
 % Initialize test information and flags
 num_tubes = 3;      % number of tubes for test
+
 test_points = 20;   % number of test points
 fpp = 20;           % number of frames per point
 
@@ -12,8 +13,9 @@ robot = Robot(num_tubes);    % robot object (to call forward kinematics of robot
 % filename = 'data_files/18_04_23-16_13_2-tubes_rotate';
 % filename = 'D:/FichStuff/CTR_Fall23/2023-10-6_05-47-00.csv';
 % filename = 'D:/FichStuff/CTR_Fall23/2023-10-7_03-06-44.csv';
-filename = 'D:/FichStuff/CTR_Fall23/2023-10-9_02-10-58.csv';
-% filename = 'D:/FichStuff/CTR_Fall23/CTR_Kinematic_Verification/data_script_cSharp_api/data_files/output.csv';
+% filename = 'D:/FichStuff/CTR_Fall23/2023-10-9_02-10-58.csv';
+filename = 'D:/FichStuff/CTR_Fall23/CTR_Kinematic_Verification/data_script_cSharp_api/data_files/output.csv';
+
 T1 = readtable(filename, 'Format','auto');
 
 if (num_tubes == 3)
@@ -128,6 +130,7 @@ for i = 1:test_points
     % (4 x 4 x n)
     
     % ee_fk_tf(:,:,i) = f1_f0*TT(:,:,i)
+
     if (num_tubes == 3)
         ee_fk_tf(:,:,i) = f1_f0*TT(:,:,1,i)*TT(:,:,2,i)*TT(:,:,3,i)*TT(:,:,4,i)*TT(:,:,5,i);
     else

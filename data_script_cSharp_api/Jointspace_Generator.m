@@ -5,6 +5,7 @@ classdef Jointspace_Generator < handle
         cart2 = Cart(0, 45, -45, 45);
         cart3 = Cart(0, 45, -45, 45);
 
+
         
         % Lists or the positions in different formats
         positions_list = []
