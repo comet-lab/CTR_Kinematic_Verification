@@ -3,8 +3,9 @@ classdef Robot < handle
     properties
         num_tubes = 2
 
-        tube1 = Tube(4.6*10^-3, 5.8*10^-3, 1/11, 91.21*10^-3, 50*10^-3, 1935*10^6)
-        tube2 = Tube(2.8*10^-3, 4.0*10^-3, 1/14, 161.0*10^-3, 50*10^-3, 1935*10^6)
+        tube1 = Tube(2.792*10^-3, 3.3*10^-3, 1/17, 90*10^-3, 50*10^-3, 1935*10^6);
+        tube2 = Tube(2.132*10^-3, 2.64*10^-3, 1/22, 170*10^-3, 50*10^-3, 1935*10^6);
+        tube3 = Tube(1.472*10^-3, 1.98*10^-3, 1/29, 250*10^-3, 50*10^-3, 1935*10^6);
 
         rot_ee = [] % end effector rotation
         pos_ee = [] % end effector translation
@@ -44,7 +45,7 @@ classdef Robot < handle
             self.lls = get_links(self, rho);
 
             % Now we calculate the phi and kappa values
-            [self.phi,self.kappa] = calculate_phi_and_kappa(self, theta);
+            [self.phi,self.kappa] = calculate_phi_and_kappa(self, theta, rho);
 
             % Finally we calculate the ending transform
             T = calculate_transform(self, self.lls, self.phi, self.kappa);
@@ -198,16 +199,16 @@ classdef Robot < handle
 
         % Should return phi (1 x j vector, where j is num links)
         % and K (1 x j vector)
-        function [phi,K] = calculate_phi_and_kappa(self, theta)
+        function [phi,K] = calculate_phi_and_kappa(self, theta, rho)
 
-             [chi, gamma] = in_plane_param(self, theta);
+             [chi, gamma] = in_plane_param(self, theta, rho);
              if(self.num_tubes == 2)
         
-                phi1 = atan2(gamma(1), chi(1));
-                phi2 = atan2(gamma(2), chi(2));
-                phi3 = atan2(gamma(3), chi(3));
+                phi1_0 = atan2(gamma(1), chi(1));
+                phi2_0 = atan2(gamma(2), chi(2));
+                phi3_0 = atan2(gamma(3), chi(3));
         
-                phi = [phi1, phi2, phi3];
+                phi = [phi1_0, phi2_0-phi1_0, phi3_0-phi2_0];
 
                 K1 = sqrt(chi(1)*chi(1) + gamma(1)*gamma(1));
                 K2 = sqrt(chi(2)*chi(2) + gamma(2)*gamma(2));
@@ -216,13 +217,13 @@ classdef Robot < handle
                 K = [K1, K2, K3];
             else
 
-                phi1 = atan2(gamma(1), chi(1));
-                phi2 = atan2(gamma(2), chi(2));
-                phi3 = atan2(gamma(3), chi(3));
-                phi4 = atan2(gamma(4), chi(4));
-                phi5 = atan2(gamma(5), chi(5));
+                phi1_0 = atan2(gamma(1), chi(1));
+                phi2_0 = atan2(gamma(2), chi(2));
+                phi3_0 = atan2(gamma(3), chi(3));
+                phi4_0 = atan2(gamma(4), chi(4));
+                phi5_0 = atan2(gamma(5), chi(5));
                 
-                phi = [phi1, phi2, phi3, phi4, phi5];
+                phi = [phi1_0, phi2_0 - phi1_0, phi3_0 - phi2_0, phi4_0 - phi3_0, phi5_0 -phi4_0];
 
                 K1 = sqrt(chi(1)*chi(1) + gamma(1)*gamma(1));
                 K2 = sqrt(chi(2)*chi(2) + gamma(2)*gamma(2));
@@ -239,9 +240,9 @@ classdef Robot < handle
 
             if(self.num_tubes ==2)
                 for i =1:3    
-                    tt = [[(cos(phi(i))*cos(phi(i))*(cos(K(i)*s(i))-1)) + 1, sin(phi(i))*cos(phi(i))*(cos(K(i)*s(i))-1), cos(phi(i))*sin(K(i)*s(i)), cos(phi(i))*(1-cos(K(i)*s(i)))/K(i)];
-                        [sin(phi(i))*cos(phi(i))*(cos(K(i)*s(i)) -1), + cos(phi(i))*cos(phi(i))*(1 - cos(K(i)*s(i))) + cos(K(i)*s(i)), sin(phi(i))*sin(K(i)*s(i)), sin(phi(i))*(1-cos(K(i)*s(i)))/K(i)];
-                        [-cos(phi(i))*sin(K(i)*s(i)), -sin(phi(i))*sin(K(i)*s(i)), cos(K(i)*s(i)), sin(K(i)*s(i))/K(i)];
+                    tt = [[cos(phi(i))*cos(K(i)*s(i)), -sin(phi(i)), cos(phi(i))*sin(K(i)*s(i)), cos(phi(i))*(1-cos(K(i)*s(i)))/K(i)];
+                        [sin(phi(i))*cos(K(i)*s(i)), +cos(phi(i)), sin(phi(i))*sin(K(i)*s(i)), sin(phi(i))*(1-cos(K(i)*s(i)))/K(i)];
+                        [-sin(K(i)*s(i)), 0, cos(K(i)*s(i)), sin(K(i)*s(i))/K(i)];
                         [0, 0, 0, 1]];
                    
                     
@@ -288,7 +289,7 @@ classdef Robot < handle
         end
 
         
-        function [chi, gamma] = in_plane_param(self, theta)
+        function [chi, gamma] = in_plane_param(self, theta, rho)
 
             if(self.num_tubes == 2)
                 x1n = self.tube1.E*self.tube1.I*self.tube1.k*cos(theta(1));
@@ -322,9 +323,6 @@ classdef Robot < handle
                 x2n = self.tube1.E*self.tube1.I*self.tube1.k*cos(theta(1)) + self.tube2.E*self.tube2.I*self.tube2.k*cos(theta(2));
                 x2 = x2n/(self.tube1.E*self.tube1.I + self.tube2.E*self.tube2.I + self.tube3.E*self.tube3.I);
         
-                x3n = self.tube2.E*self.tube2.I*self.tube2.k*cos(theta(2));
-                x3 = x3n/(self.tube2.E*self.tube2.I + self.tube3.E*self.tube3.I);
-    
                 x4n = self.tube2.E*self.tube2.I*self.tube2.k*cos(theta(2)) + self.tube3.E*self.tube3.I*self.tube3.k*cos(theta(3));
                 x4 = x4n/(self.tube2.E*self.tube2.I + self.tube3.E*self.tube3.I);
     
@@ -338,14 +336,27 @@ classdef Robot < handle
                 y2n = self.tube1.E*self.tube1.I*self.tube1.k*sin(theta(1)) + self.tube2.E*self.tube2.I*self.tube2.k*sin(theta(2));
                 y2 = y2n/(self.tube1.E*self.tube1.I + self.tube2.E*self.tube2.I + self.tube3.E*self.tube3.I);
         
-                y3n = self.tube2.E*self.tube2.I*self.tube2.k*sin(theta(2));
-                y3 = y3n/(self.tube2.E*self.tube2.I + self.tube3.E*self.tube3.I);
-    
                 y4n = self.tube2.E*self.tube2.I*self.tube2.k*sin(theta(2)) + self.tube3.E*self.tube3.I*self.tube3.k*sin(theta(3));
                 y4 = y4n/(self.tube2.E*self.tube2.I + self.tube3.E*self.tube3.I);
     
                 y5n = self.tube3.E*self.tube3.I*self.tube3.k*sin(theta(3));
                 y5 = y5n/(self.tube3.E*self.tube3.I);
+
+
+                if (rho(3) > self.tube1.d)
+                    x3n = self.tube2.E*self.tube2.I*self.tube2.k*cos(theta(2));
+                    x3 = x3n/(self.tube2.E*self.tube2.I + self.tube3.E*self.tube3.I);
+
+                    y3n = self.tube2.E*self.tube2.I*self.tube2.k*sin(theta(2));
+                    y3 = y3n/(self.tube2.E*self.tube2.I + self.tube3.E*self.tube3.I);
+
+                else
+                    x3n = self.tube1.E*self.tube1.I*self.tube1.k*cos(theta(1)) + self.tube2.E*self.tube2.I*self.tube2.k*cos(theta(2)) + self.tube3.E*self.tube3.I*self.tube3.k*cos(theta(3));
+                    x3 = x3n/(self.tube1.E*self.tube1.I + self.tube2.E*self.tube2.I + self.tube3.E*self.tube3.I);
+
+                    y3n = self.tube1.E*self.tube1.I*self.tube1.k*sin(theta(1)) + self.tube2.E*self.tube2.I*self.tube2.k*sin(theta(2)) + self.tube3.E*self.tube3.I*self.tube3.k*sin(theta(3));
+                    y3 = y3n/(self.tube1.E*self.tube1.I + self.tube2.E*self.tube2.I + self.tube3.E*self.tube3.I);
+                end
 
                 chi = [x1, x2, x3, x4, x5];
                 gamma = [y1, y2, y3, y4, y5];
