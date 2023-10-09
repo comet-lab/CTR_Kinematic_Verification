@@ -165,7 +165,7 @@ classdef Robot < handle
 
                     tt = [[cos(phi(i))*cos(K(i)*s(i)), -sin(phi(i)), cos(phi(i))*sin(K(i)*s(i)), cos(phi(i))*(1-cos(K(i)*s(i)))/K(i)];
                           [sin(phi(i))*cos(K(i)*s(i)), cos(phi(i)), sin(phi(i))*sin(K(i)*s(i)), sin(phi(i))*(1-cos(K(i)*s(i)))/K(i)];
-                          [-sin(K(i)*s(i)), 0, cos(K(i)*s(i)), sin(K(i)*s(i))/K(i)];
+                          [-sin(K(i)*s(i)), 0, cos(K(i)*s(i), sin(K(i)*s(i))/K(i))];
                           [0, 0, 0, 1]];
                     
                     T(:,:,i) = tt;

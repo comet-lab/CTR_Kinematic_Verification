@@ -1,5 +1,5 @@
 clear% Initialize test information
-num_tubes = 2; % number of tubes for test
+num_tubes = 3; % number of tubes for test
 num_pts = 20;  % number of test points
 rotation = true; % true if test includes rotation
 

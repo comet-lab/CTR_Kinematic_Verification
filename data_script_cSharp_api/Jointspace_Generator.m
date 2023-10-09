@@ -3,7 +3,7 @@ classdef Jointspace_Generator < handle
     properties
         cart1 = Cart(0, 40, -45, 45);
         cart2 = Cart(0, 45, -45, 45);
-        cart3 = Cart(0, 0, 0, 0);
+        cart3 = Cart(0, 45, -45, 45);
 
         
         % Lists or the positions in different formats
