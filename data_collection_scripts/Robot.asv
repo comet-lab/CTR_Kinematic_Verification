@@ -33,7 +33,7 @@ classdef Robot < handle
             %       of current joint variables for the robot, taking the
             %       form [rho1 ... rhon theta1 ... thetan], where rhoi is 
             %       the translation of the ith tube and thetai is the input
-            %       rotation of the ith tube. rho values are in [mm] and
+            %       rotation of the ith tube. rho values are in [m] and
             %       theta values are in [deg].
             
             % First we get the rho and theta avlues from q_var
@@ -43,6 +43,8 @@ classdef Robot < handle
             % Next, we use rho to get the link lengths
             self.lls = get_links(self, rho);
 
+            disp(self.lls);
+
             % Now we calculate the phi and kappa values
             [self.phi,self.kappa] = calculate_phi_and_kappa(self, theta);
 
@@ -51,11 +53,6 @@ classdef Robot < handle
             % disp(T)
 
             if self.plotOn
-
-                disp(q_var)
-                disp(self.lls)
-                disp(self.phi)
-                disp(self.kappa)
 
                 plot_tube(self, q_var, self.lls, self.phi, self.kappa)
 
@@ -80,7 +77,7 @@ classdef Robot < handle
             %   inputs. QVAR takes the form 
             %   [rho1 ... rhon theta1 ... thetan], where rhoi is the 
             %   translation of the ith tube and thetai is the input
-            %   rotation of the ith tube. rho values are in [mm] and theta 
+            %   rotation of the ith tube. rho values are in [m] and theta 
             %   values are in [deg].
 
             % First define rho values in terms of joint variables. We
@@ -93,7 +90,7 @@ classdef Robot < handle
             % Fill in the vector with the values of q_var, taking care to
             % subtract the value of q_var(1) so that all translations are
             % w/r/t the first tube translation and taking care to convert
-            % from mm to m
+            % from m to mm
             for i=2:self.num_tubes
                 rho(i) = (q_var(i) - q_var(1)) * 10^-3;
             end
@@ -175,7 +172,7 @@ classdef Robot < handle
             %   inputs. QVAR takes the form 
             %   [rho1 ... rhon theta1 ... thetan], where rhoi is the 
             %   translation of the ith tube and thetai is the input
-            %   rotation of the ith tube. rho values are in [mm] and theta 
+            %   rotation of the ith tube. rho values are in [m] and theta 
             %   values are in [deg].
                 
             % Initialize a vector to hold the result
