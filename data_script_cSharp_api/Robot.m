@@ -3,14 +3,13 @@ classdef Robot < handle
     properties
         num_tubes = 2
 
-        tube1 = Tube(3.046*10^-3, 3.3*10^-3, 1/17, 90*10^-3, 50*10^-3, 1935*10^6);
-        tube2 = Tube(2.386*10^-3, 2.64*10^-3, 1/22, 170*10^-3, 50*10^-3, 1935*10^6);
-        tube3 = Tube(1.726*10^-3, 1.98*10^-3, 1/29, 250*10^-3, 50*10^-3, 1935*10^6);
+        tube1 = Tube(2.792*10^-3, 3.3*10^-3, 1/17, 90*10^-3, 50*10^-3, 1935*10^6);
+        tube2 = Tube(2.132*10^-3, 2.64*10^-3, 1/22, 170*10^-3, 50*10^-3, 1935*10^6);
+        tube3 = Tube(1.472*10^-3, 1.98*10^-3, 1/29, 250*10^-3, 50*10^-3, 1935*10^6);
+
 
         rot_ee = [] % end effector rotation
         pos_ee = [] % end effector translation
-
-        
 
         lls = []
         phi = []
@@ -116,8 +115,7 @@ classdef Robot < handle
                 phi2_0 = atan2(gamma(2), chi(2));
                 phi3_0 = atan2(gamma(3), chi(3));
         
-%                 phi = [phi1_0, phi2_0-phi1_0, phi3_0-phi2_0];
-                phi = [phi1_0, phi2_0, phi3_0];
+                phi = [phi1_0, phi2_0-phi1_0, phi3_0-phi2_0];
 
                 K1 = sqrt(chi(1)*chi(1) + gamma(1)*gamma(1));
                 K2 = sqrt(chi(2)*chi(2) + gamma(2)*gamma(2));
@@ -132,8 +130,7 @@ classdef Robot < handle
                 phi4_0 = atan2(gamma(4), chi(4));
                 phi5_0 = atan2(gamma(5), chi(5));
                 
-%                 phi = [phi1_0, phi2_0 - phi1_0, phi3_0 - phi2_0, phi4_0 - phi3_0, phi5_0 -phi4_0];
-                phi = [phi1_0, phi2_0, phi3_0, phi4_0, phi5_0];
+                phi = [phi1_0, phi2_0 - phi1_0, phi3_0 - phi2_0, phi4_0 - phi3_0, phi5_0 -phi4_0];
 
                 K1 = sqrt(chi(1)*chi(1) + gamma(1)*gamma(1));
                 K2 = sqrt(chi(2)*chi(2) + gamma(2)*gamma(2));
@@ -160,10 +157,11 @@ classdef Robot < handle
                 end
             else
                 for i =1:5
-                    tt = [[(cos(phi(i))*cos(phi(i))*(cos(K(i)*s(i))-1)) + 1, sin(phi(i))*cos(phi(i))*(cos(K(i)*s(i))-1), cos(phi(i))*sin(K(i)*s(i)), cos(phi(i))*(1-cos(K(i)*s(i)))/K(i)];
-                        [sin(phi(i))*cos(phi(i))*(cos(K(i)*s(i)) -1), + cos(phi(i))*cos(phi(i))*(1 - cos(K(i)*s(i))) + cos(K(i)*s(i)), sin(phi(i))*sin(K(i)*s(i)), sin(phi(i))*(1-cos(K(i)*s(i)))/K(i)];
-                        [-cos(phi(i))*sin(K(i)*s(i)), -sin(phi(i))*sin(K(i)*s(i)), cos(K(i)*s(i)), sin(K(i)*s(i))/K(i)];
-                        [0, 0, 0, 1]];
+
+                    tt = [[cos(phi(i))*cos(K(i)*s(i)), -sin(phi(i)), cos(phi(i))*sin(K(i)*s(i)), cos(phi(i))*(1-cos(K(i)*s(i)))/K(i)];
+                          [sin(phi(i))*cos(K(i)*s(i)), cos(phi(i)), sin(phi(i))*sin(K(i)*s(i)), sin(phi(i))*(1-cos(K(i)*s(i)))/K(i)];
+                          [-sin(K(i)*s(i)), 0, cos(K(i)*s(i)), sin(K(i)*s(i))/K(i)];
+                          [0, 0, 0, 1]];
                     
                     T(:,:,i) = tt;
                 end
