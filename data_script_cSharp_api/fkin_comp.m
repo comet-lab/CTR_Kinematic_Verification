@@ -172,9 +172,13 @@ end
 
 % RMSE across all the points for the position of robot tip
 pos_error_t = rmse(ee_fk_pos, ee_hf_pos);
+disp("RMSE across coordinates: ")
+disp(pos_error_t);
 
 % RMSE across all the points for the norm of the position of robot tip
 rmse_t = rmse(norm1, norm2);
+disp("RMSE of norms: ")
+disp(rmse_t);
 
 
 %%% PLOTTING POSTIONS AND ERROR
