@@ -3,9 +3,6 @@ classdef Robot < handle
     properties
         num_tubes = 2
 
-        tube1 = Tube(2.792*10^-3, 3.3*10^-3, 1/17, 90*10^-3, 50*10^-3, 1935*10^6);
-        tube2 = Tube(2.132*10^-3, 2.64*10^-3, 1/22, 170*10^-3, 50*10^-3, 1935*10^6);
-        tube3 = Tube(1.472*10^-3, 1.98*10^-3, 1/29, 250*10^-3, 50*10^-3, 1935*10^6);
 
         rot_ee = [] % end effector rotation
         pos_ee = [] % end effector translation
@@ -20,10 +17,10 @@ classdef Robot < handle
     end
 
     methods
-        function self = Robot(num_tubes, plotOn)
-            self.num_tubes = num_tubes;
+        function self = Robot(tubes, plotOn)
+            self.num_tubes = size(tubes, 2);
             self.plotOn = plotOn;
-            self.tubes = [self.tube1, self.tube2];
+            self.tubes = tubes;
         end
 
         % Here we calculate the kinematics of a full CTR
@@ -149,13 +146,13 @@ classdef Robot < handle
             end
 
             % if(self.num_tubes == 2)
-            %     d = [self.tube1.d, self.tube2.d];
+            %     d = [self.tubes(1).d, self.tubes(2).d];
             %     T = [rho(1), rho(2), rho(1)+d(1), rho(2)+d(2)]; 
             % 
             %     Ts = sort(T);
             %     s = [Ts(2)-Ts(1), Ts(3)-Ts(2), Ts(4)-Ts(3)];
             % else
-            %     d = [self.tube1.d, self.tube2.d, self.tube3.d];
+            %     d = [self.tubes(1).d, self.tubes(2).d, self.tubes(3).d];
             %     T = [rho(1), rho(2), rho(3), rho(1)+d(1), rho(2)+d(2), rho(3) + d(3)];
             % 
             %     Ts = sort(T);
@@ -236,28 +233,28 @@ classdef Robot < handle
         end
 
         function T = calculate_transform(self, s, phi, K)
-            T=[];
+            T=eye(4);
 
-            if(self.num_tubes ==2)
-                for i =1:3    
-                    tt = [[cos(phi(i))*cos(K(i)*s(i)), -sin(phi(i)), cos(phi(i))*sin(K(i)*s(i)), cos(phi(i))*(1-cos(K(i)*s(i)))/K(i)];
-                        [sin(phi(i))*cos(K(i)*s(i)), +cos(phi(i)), sin(phi(i))*sin(K(i)*s(i)), sin(phi(i))*(1-cos(K(i)*s(i)))/K(i)];
-                        [-sin(K(i)*s(i)), 0, cos(K(i)*s(i)), sin(K(i)*s(i))/K(i)];
-                        [0, 0, 0, 1]];
-                   
-                    
-                    T(:,:,i) = tt;
-                end
-            else
-                for i =1:5
-                    tt = [[cos(phi(i))*cos(K(i)*s(i)), -sin(phi(i)), cos(phi(i))*sin(K(i)*s(i)), cos(phi(i))*(1-cos(K(i)*s(i)))/K(i)];
-                        [sin(phi(i))*cos(K(i)*s(i)), +cos(phi(i)), sin(phi(i))*sin(K(i)*s(i)), sin(phi(i))*(1-cos(K(i)*s(i)))/K(i)];
-                        [-sin(K(i)*s(i)), 0, cos(K(i)*s(i)), sin(K(i)*s(i))/K(i)];
-                        [0, 0, 0, 1]];
-                    
-                    T(:,:,i) = tt;
-                end
+%             if(self.num_tubes ==2)
+            for i =1:(self.num_tubes*2 - 1)
+                tt = [[cos(phi(i))*cos(K(i)*s(i)), -sin(phi(i)), cos(phi(i))*sin(K(i)*s(i)), cos(phi(i))*(1-cos(K(i)*s(i)))/K(i)];
+                    [sin(phi(i))*cos(K(i)*s(i)), +cos(phi(i)), sin(phi(i))*sin(K(i)*s(i)), sin(phi(i))*(1-cos(K(i)*s(i)))/K(i)];
+                    [-sin(K(i)*s(i)), 0, cos(K(i)*s(i)), sin(K(i)*s(i))/K(i)];
+                    [0, 0, 0, 1]];
+               
+                
+                T(:,:) = T*tt;
             end
+%             else
+%                 for i =1:5
+%                     tt = [[cos(phi(i))*cos(K(i)*s(i)), -sin(phi(i)), cos(phi(i))*sin(K(i)*s(i)), cos(phi(i))*(1-cos(K(i)*s(i)))/K(i)];
+%                         [sin(phi(i))*cos(K(i)*s(i)), +cos(phi(i)), sin(phi(i))*sin(K(i)*s(i)), sin(phi(i))*(1-cos(K(i)*s(i)))/K(i)];
+%                         [-sin(K(i)*s(i)), 0, cos(K(i)*s(i)), sin(K(i)*s(i))/K(i)];
+%                         [0, 0, 0, 1]];
+%                     
+%                     T(:,:) = T*tt;
+%                 end
+%             end
         end
 
         % This is a function to plot the tube as shown by the forward
@@ -272,19 +269,19 @@ classdef Robot < handle
             
             if(self.num_tubes ==2)
                 % calculate where the tubes will end
-%                 points = [pts_per_seg 2*pts_per_seg - pts_per_seg* (s(2)/self.tube1.d)];
+%                 points = [pts_per_seg 2*pts_per_seg - pts_per_seg* (s(2)/self.tubes(1).d)];
                 points = [pts_per_seg 2*pts_per_seg 3*pts_per_seg];
                 try
-                    draw_ctcr(g,points,[self.tube1.od self.tube1.od self.tube2.od]);
+                    draw_ctcr(g,points,[self.tubes(1).od self.tubes(1).od self.tubes(2).od]);
                 catch
                     disp("Invalid position to plot")
                 end
             else
-                translation_frac = [q_var(1)/self.tube1.d q_var(2)/self.tube2.d; q_var(3)/self.tube3.d];
+                translation_frac = [q_var(1)/self.tubes(1).d q_var(2)/self.tubes(2).d; q_var(3)/self.tubes(3).d];
 
                 points = int16(translation_frac * pts_per_seg);
 
-                draw_ctcr(g,points,[self.tube1.od self.tube2.od]);
+                draw_ctcr(g,points,[self.tubes(1).od self.tubes(2).od]);
             end
         end
 
@@ -292,24 +289,24 @@ classdef Robot < handle
         function [chi, gamma] = in_plane_param(self, theta, rho)
 
             if(self.num_tubes == 2)
-                x1n = self.tube1.E*self.tube1.I*self.tube1.k*cos(theta(1));
-                x1 = x1n/(self.tube1.E*self.tube1.I + self.tube2.E*self.tube2.I);
+                x1n = self.tubes(1).E*self.tubes(1).I*self.tubes(1).k*cos(theta(1));
+                x1 = x1n/(self.tubes(1).E*self.tubes(1).I + self.tubes(2).E*self.tubes(2).I);
         
-                x2n = self.tube1.E*self.tube1.I*self.tube1.k*cos(theta(1)) + self.tube2.E*self.tube2.I*self.tube2.k*cos(theta(2));
-                x2 = x2n/(self.tube1.E*self.tube1.I + self.tube2.E*self.tube2.I);
+                x2n = self.tubes(1).E*self.tubes(1).I*self.tubes(1).k*cos(theta(1)) + self.tubes(2).E*self.tubes(2).I*self.tubes(2).k*cos(theta(2));
+                x2 = x2n/(self.tubes(1).E*self.tubes(1).I + self.tubes(2).E*self.tubes(2).I);
         
-                x3n = self.tube2.E*self.tube2.I*self.tube2.k*cos(theta(2));
-                x3 = x3n/(self.tube2.E*self.tube2.I);
+                x3n = self.tubes(2).E*self.tubes(2).I*self.tubes(2).k*cos(theta(2));
+                x3 = x3n/(self.tubes(2).E*self.tubes(2).I);
         
         
-                y1n = self.tube1.E*self.tube1.I*self.tube1.k*sin(theta(1));
-                y1 = y1n/(self.tube1.E*self.tube1.I + self.tube2.E*self.tube2.I);
+                y1n = self.tubes(1).E*self.tubes(1).I*self.tubes(1).k*sin(theta(1));
+                y1 = y1n/(self.tubes(1).E*self.tubes(1).I + self.tubes(2).E*self.tubes(2).I);
         
-                y2n = self.tube1.E*self.tube1.I*self.tube1.k*sin(theta(1)) + self.tube2.E*self.tube2.I*self.tube2.k*sin(theta(2));
-                y2 = y2n/(self.tube1.E*self.tube1.I + self.tube2.E*self.tube2.I);
+                y2n = self.tubes(1).E*self.tubes(1).I*self.tubes(1).k*sin(theta(1)) + self.tubes(2).E*self.tubes(2).I*self.tubes(2).k*sin(theta(2));
+                y2 = y2n/(self.tubes(1).E*self.tubes(1).I + self.tubes(2).E*self.tubes(2).I);
         
-                y3n = self.tube2.E*self.tube2.I*self.tube2.k*sin(theta(2));
-                y3 = y3n/(self.tube2.E*self.tube2.I);
+                y3n = self.tubes(2).E*self.tubes(2).I*self.tubes(2).k*sin(theta(2));
+                y3 = y3n/(self.tubes(2).E*self.tubes(2).I);
     
                 chi = [x1, x2, x3];
                 gamma = [y1, y2, y3];
@@ -317,45 +314,45 @@ classdef Robot < handle
             
             else
 
-                x1n = self.tube1.E*self.tube1.I*self.tube1.k*cos(theta(1));
-                x1 = x1n/(self.tube1.E*self.tube1.I + self.tube2.E*self.tube2.I + self.tube3.E*self.tube3.I);
+                x1n = self.tubes(1).E*self.tubes(1).I*self.tubes(1).k*cos(theta(1));
+                x1 = x1n/(self.tubes(1).E*self.tubes(1).I + self.tubes(2).E*self.tubes(2).I + self.tubes(3).E*self.tubes(3).I);
         
-                x2n = self.tube1.E*self.tube1.I*self.tube1.k*cos(theta(1)) + self.tube2.E*self.tube2.I*self.tube2.k*cos(theta(2));
-                x2 = x2n/(self.tube1.E*self.tube1.I + self.tube2.E*self.tube2.I + self.tube3.E*self.tube3.I);
+                x2n = self.tubes(1).E*self.tubes(1).I*self.tubes(1).k*cos(theta(1)) + self.tubes(2).E*self.tubes(2).I*self.tubes(2).k*cos(theta(2));
+                x2 = x2n/(self.tubes(1).E*self.tubes(1).I + self.tubes(2).E*self.tubes(2).I + self.tubes(3).E*self.tubes(3).I);
         
-                x4n = self.tube2.E*self.tube2.I*self.tube2.k*cos(theta(2)) + self.tube3.E*self.tube3.I*self.tube3.k*cos(theta(3));
-                x4 = x4n/(self.tube2.E*self.tube2.I + self.tube3.E*self.tube3.I);
+                x4n = self.tubes(2).E*self.tubes(2).I*self.tubes(2).k*cos(theta(2)) + self.tubes(3).E*self.tubes(3).I*self.tubes(3).k*cos(theta(3));
+                x4 = x4n/(self.tubes(2).E*self.tubes(2).I + self.tubes(3).E*self.tubes(3).I);
     
-                x5n = self.tube3.E*self.tube3.I*self.tube3.k*cos(theta(3));
-                x5 = x5n/(self.tube3.E*self.tube3.I);
+                x5n = self.tubes(3).E*self.tubes(3).I*self.tubes(3).k*cos(theta(3));
+                x5 = x5n/(self.tubes(3).E*self.tubes(3).I);
         
         
-                y1n = self.tube1.E*self.tube1.I*self.tube1.k*sin(theta(1));
-                y1 = y1n/(self.tube1.E*self.tube1.I + self.tube2.E*self.tube2.I + self.tube3.E*self.tube3.I);
+                y1n = self.tubes(1).E*self.tubes(1).I*self.tubes(1).k*sin(theta(1));
+                y1 = y1n/(self.tubes(1).E*self.tubes(1).I + self.tubes(2).E*self.tubes(2).I + self.tubes(3).E*self.tubes(3).I);
         
-                y2n = self.tube1.E*self.tube1.I*self.tube1.k*sin(theta(1)) + self.tube2.E*self.tube2.I*self.tube2.k*sin(theta(2));
-                y2 = y2n/(self.tube1.E*self.tube1.I + self.tube2.E*self.tube2.I + self.tube3.E*self.tube3.I);
+                y2n = self.tubes(1).E*self.tubes(1).I*self.tubes(1).k*sin(theta(1)) + self.tubes(2).E*self.tubes(2).I*self.tubes(2).k*sin(theta(2));
+                y2 = y2n/(self.tubes(1).E*self.tubes(1).I + self.tubes(2).E*self.tubes(2).I + self.tubes(3).E*self.tubes(3).I);
         
-                y4n = self.tube2.E*self.tube2.I*self.tube2.k*sin(theta(2)) + self.tube3.E*self.tube3.I*self.tube3.k*sin(theta(3));
-                y4 = y4n/(self.tube2.E*self.tube2.I + self.tube3.E*self.tube3.I);
+                y4n = self.tubes(2).E*self.tubes(2).I*self.tubes(2).k*sin(theta(2)) + self.tubes(3).E*self.tubes(3).I*self.tubes(3).k*sin(theta(3));
+                y4 = y4n/(self.tubes(2).E*self.tubes(2).I + self.tubes(3).E*self.tubes(3).I);
     
-                y5n = self.tube3.E*self.tube3.I*self.tube3.k*sin(theta(3));
-                y5 = y5n/(self.tube3.E*self.tube3.I);
+                y5n = self.tubes(3).E*self.tubes(3).I*self.tubes(3).k*sin(theta(3));
+                y5 = y5n/(self.tubes(3).E*self.tubes(3).I);
 
 
-                if (rho(3) > self.tube1.d)
-                    x3n = self.tube2.E*self.tube2.I*self.tube2.k*cos(theta(2));
-                    x3 = x3n/(self.tube2.E*self.tube2.I + self.tube3.E*self.tube3.I);
+                if (rho(3) > self.tubes(1).d)
+                    x3n = self.tubes(2).E*self.tubes(2).I*self.tubes(2).k*cos(theta(2));
+                    x3 = x3n/(self.tubes(2).E*self.tubes(2).I + self.tubes(3).E*self.tubes(3).I);
 
-                    y3n = self.tube2.E*self.tube2.I*self.tube2.k*sin(theta(2));
-                    y3 = y3n/(self.tube2.E*self.tube2.I + self.tube3.E*self.tube3.I);
+                    y3n = self.tubes(2).E*self.tubes(2).I*self.tubes(2).k*sin(theta(2));
+                    y3 = y3n/(self.tubes(2).E*self.tubes(2).I + self.tubes(3).E*self.tubes(3).I);
 
                 else
-                    x3n = self.tube1.E*self.tube1.I*self.tube1.k*cos(theta(1)) + self.tube2.E*self.tube2.I*self.tube2.k*cos(theta(2)) + self.tube3.E*self.tube3.I*self.tube3.k*cos(theta(3));
-                    x3 = x3n/(self.tube1.E*self.tube1.I + self.tube2.E*self.tube2.I + self.tube3.E*self.tube3.I);
+                    x3n = self.tubes(1).E*self.tubes(1).I*self.tubes(1).k*cos(theta(1)) + self.tubes(2).E*self.tubes(2).I*self.tubes(2).k*cos(theta(2)) + self.tubes(3).E*self.tubes(3).I*self.tubes(3).k*cos(theta(3));
+                    x3 = x3n/(self.tubes(1).E*self.tubes(1).I + self.tubes(2).E*self.tubes(2).I + self.tubes(3).E*self.tubes(3).I);
 
-                    y3n = self.tube1.E*self.tube1.I*self.tube1.k*sin(theta(1)) + self.tube2.E*self.tube2.I*self.tube2.k*sin(theta(2)) + self.tube3.E*self.tube3.I*self.tube3.k*sin(theta(3));
-                    y3 = y3n/(self.tube1.E*self.tube1.I + self.tube2.E*self.tube2.I + self.tube3.E*self.tube3.I);
+                    y3n = self.tubes(1).E*self.tubes(1).I*self.tubes(1).k*sin(theta(1)) + self.tubes(2).E*self.tubes(2).I*self.tubes(2).k*sin(theta(2)) + self.tubes(3).E*self.tubes(3).I*self.tubes(3).k*sin(theta(3));
+                    y3 = y3n/(self.tubes(1).E*self.tubes(1).I + self.tubes(2).E*self.tubes(2).I + self.tubes(3).E*self.tubes(3).I);
                 end
 
                 chi = [x1, x2, x3, x4, x5];
@@ -368,12 +365,12 @@ classdef Robot < handle
         function psi = analytical_soln(self, theta, link_len, psi_prev)
             syms x;
 
-            I = [self.tube1.I, self.tube2.I];
-            E = self.tube1.E;
-            G = self.tube1.G;
-            J = [self.tube1.J, self.tube2.J];
-            Ls = [self.tube1.l, self.tube2.l];
-            k = [self.tube1.k, self.tube2.k];
+            I = [self.tubes(1).I, self.tubes(2).I];
+            E = self.tubes(1).E;
+            G = self.tubes(1).G;
+            J = [self.tubes(1).J, self.tubes(2).J];
+            Ls = [self.tubes(1).l, self.tubes(2).l];
+            k = [self.tubes(1).k, self.tubes(2).k];
 
             c1 = G*J(1)/Ls(1);
             c2 = G*J(2)/Ls(2);
@@ -426,14 +423,14 @@ classdef Robot < handle
             y_u = 0;
             t_u = 0;
 
-            I = [self.tube1.I, self.tube2.I];
-            E = self.tube1.E;
-            G = self.tube1.G;
-            J = [self.tube1.J, self.tube2.J];
-            Ls = [self.tube1.l, self.tube2.l];
+            I = [self.tubes(1).I, self.tubes(2).I];
+            E = self.tubes(1).E;
+            G = self.tubes(1).G;
+            J = [self.tubes(1).J, self.tubes(2).J];
+            Ls = [self.tubes(1).l, self.tubes(2).l];
 
-            k = [self.tube1.k, self.tube1.k, 0;
-                 0, self.tube2.k, self.tube2.k];
+            k = [self.tubes(1).k, self.tubes(1).k, 0;
+                 0, self.tubes(2).k, self.tubes(2).k];
 
             for i=1:2
                 t_u = t_u + (G*J(i)/(2*Ls(i)))*(alpha(i) - psi(i))^2;
