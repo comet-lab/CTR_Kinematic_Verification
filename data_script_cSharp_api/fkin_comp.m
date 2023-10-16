@@ -1,16 +1,16 @@
 % mocap vs FKin
 
 % Initialize test information and flags
-num_tubes = 3;      % number of tubes for test
+num_tubes = 2;      % number of tubes for test
 
 tube1 = Tube(2.792*10^-3, 3.3*10^-3, 1/17, 90*10^-3, 50*10^-3, 1935*10^6);
-tube2 = Tube(2.132*10^-3, 2.64*10^-3, 1/22, 170*10^-3, 50*10^-3, 1935*10^6);
-tube3 = Tube(1.472*10^-3, 1.98*10^-3, 1/29, 250*10^-3, 50*10^-3, 1935*10^6);
+tube2 = Tube(2.132*10^-3, 2.64*10^-3, 1/23, 170*10^-3, 50*10^-3, 1935*10^6);
+tube3 = Tube(1.472*10^-3, 1.98*10^-3, 1/29, 250*10^-3, 50*10^-3, 193*10^6);
 
 test_points = 20;   % number of test points
 fpp = 20;           % number of frames per point
 
-tubes = [tube1, tube2, tube3];
+tubes = [tube1, tube2];
 
 robot = Robot(tubes, false);    % robot object (to call forward kinematics of robot)
 
@@ -18,8 +18,8 @@ robot = Robot(tubes, false);    % robot object (to call forward kinematics of ro
 % enter filename / filepath if different folder
 % filename = 'data_files/18_04_23-16_13_2-tubes_rotate';
 % filename = 'D:/FichStuff/CTR_Fall23/2023-10-6_05-47-00.csv';
-% filename = 'D:/FichStuff/CTR_Fall23/2023-10-7_03-06-44.csv';
-filename = 'D:/FichStuff/CTR_Fall23/2023-10-9_02-10-58.csv';
+filename = 'D:/FichStuff/CTR_Fall23/2023-10-7_03-06-44.csv';
+% filename = 'D:/FichStuff/CTR_Fall23/2023-10-9_02-10-58.csv';
 % filename = 'D:/FichStuff/CTR_Fall23/CTR_Kinematic_Verification/data_script_cSharp_api/data_files/output.csv';
 
 T1 = readtable(filename, 'Format','auto');
@@ -119,7 +119,9 @@ for i = 1:test_points
     % x j            -> j transformations for each joint pose (j = 2*no_of_tubes - 1)
     % x n            -> iterating trhough the test points
    
+%     TT(:,:,i) = robot.fkin_tors(q_tubes(i,:), [0, 0]);
     TT(:,:,i) = robot.fkin(q_tubes(i,:));
+
     
     % Robot_home in the forward kinematics model
     % is attached to the start of the curved section of 
@@ -132,14 +134,7 @@ for i = 1:test_points
     % the forward kinematics model by
     % multiplying all the transforms of linklengths
     % (4 x 4 x n)
-    
     ee_fk_tf(:,:,i) = f1_f0*TT(:,:,i);
-
-%     if (num_tubes == 3)
-%         ee_fk_tf(:,:,i) = f1_f0*TT(:,:,1,i)*TT(:,:,2,i)*TT(:,:,3,i)*TT(:,:,4,i)*TT(:,:,5,i);
-%     else
-%         ee_fk_tf(:,:,i) = f1_f0*TT(:,:,1,i)*TT(:,:,2,i)*TT(:,:,3,i);
-%     end
 
     % contains x,y,z for the end-effector
     ee_fk_pos(i,:) = [ee_fk_tf(1,4,i); ee_fk_tf(2,4,i); ee_fk_tf(3,4,i)];
@@ -153,7 +148,7 @@ for i = 1:test_points
     % converting quaternions to euler angles
     ee_fk_eul(i,:) = quat2eul(ee_fk_quat(i,:));
 
-    
+
     % norm error for each position of robot tip
     % between the model and the mocap
     pos_error(i,:) = norm(ee_fk_pos(i,:)) - norm(ee_hf_pos(i,:));
@@ -218,7 +213,6 @@ grid on;
 set(gca,'FontSize',16,'fontWeight','bold')
 set(findall(gcf,'type','text'),'FontSize',16,'fontWeight','bold')
 ylim([25, 125]);
-
 xlabel("Test Points")
 ylabel("Position [mm]");
 title("Z Position");

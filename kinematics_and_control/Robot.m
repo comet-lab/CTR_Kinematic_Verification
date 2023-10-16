@@ -145,22 +145,7 @@ classdef Robot < handle
                 s(i) = T_sorted(i+1) - T_sorted(i);
             end
 
-            % if(self.num_tubes == 2)
-            %     d = [self.tubes(1).d, self.tubes(2).d];
-            %     T = [rho(1), rho(2), rho(1)+d(1), rho(2)+d(2)]; 
-            % 
-            %     Ts = sort(T);
-            %     s = [Ts(2)-Ts(1), Ts(3)-Ts(2), Ts(4)-Ts(3)];
-            % else
-            %     d = [self.tubes(1).d, self.tubes(2).d, self.tubes(3).d];
-            %     T = [rho(1), rho(2), rho(3), rho(1)+d(1), rho(2)+d(2), rho(3) + d(3)];
-            % 
-            %     Ts = sort(T);
-            % 
-            %     % Not sure I got this line below correct, check when doing
-            %     % three tubes
-            %     s = [Ts(2)-Ts(1), Ts(3)-Ts(2), Ts(4)-Ts(3), Ts(5)-Ts(4), Ts(6)-Ts(5)];
-            % end
+            
         end
 
         % Function to get theta values
@@ -241,20 +226,9 @@ classdef Robot < handle
                     [sin(phi(i))*cos(K(i)*s(i)), +cos(phi(i)), sin(phi(i))*sin(K(i)*s(i)), sin(phi(i))*(1-cos(K(i)*s(i)))/K(i)];
                     [-sin(K(i)*s(i)), 0, cos(K(i)*s(i)), sin(K(i)*s(i))/K(i)];
                     [0, 0, 0, 1]];
-               
                 
                 T(:,:) = T*tt;
             end
-%             else
-%                 for i =1:5
-%                     tt = [[cos(phi(i))*cos(K(i)*s(i)), -sin(phi(i)), cos(phi(i))*sin(K(i)*s(i)), cos(phi(i))*(1-cos(K(i)*s(i)))/K(i)];
-%                         [sin(phi(i))*cos(K(i)*s(i)), +cos(phi(i)), sin(phi(i))*sin(K(i)*s(i)), sin(phi(i))*(1-cos(K(i)*s(i)))/K(i)];
-%                         [-sin(K(i)*s(i)), 0, cos(K(i)*s(i)), sin(K(i)*s(i))/K(i)];
-%                         [0, 0, 0, 1]];
-%                     
-%                     T(:,:) = T*tt;
-%                 end
-%             end
         end
 
         % This is a function to plot the tube as shown by the forward
@@ -379,19 +353,17 @@ classdef Robot < handle
             b1 = c3/c1;
             b2 = c1/c2;
 
-%             disp(theta);
-            
             % eqn for psi 1
-%             taylor_expansion = taylor(link_len(2)*b1*sin(theta(2) + b2*theta(1) -(1+b2)*x), x)
-%             psi_eqn = taylor_expansion + theta(1) - x == 0
+            taylor_expansion = taylor(link_len(2)*b1*sin(theta(2) + b2*theta(1) -(1+b2)*x) - x, x);
+            psi_eqn = taylor_expansion + theta(1) == 0;
 
             % equation rewritten for psi 2
-            taylor_expansion = link_len(2)*b1*b2*sin(x - theta(1) + (1/b2)*(x-theta(2)));        % not this not a expansion, but the eqn itself
-            psi_eqn = taylor_expansion + x - theta(2) == 0;
+%             taylor_expansion = link_len(2)*b1*b2*sin(x - theta(1) + (1/b2)*(x-theta(2)));        % not this not a expansion, but the eqn itself
+%             psi_eqn = taylor_expansion + x - theta(2) == 0;
 
 %             psi_all = solve(psi_eqn, x,"Real",true, "PrincipalValue",true, "MaxDegree", 4); 
             
-            psi2 = vpasolve(psi_eqn, x, psi_prev(2));   % numerical solver for equation and finds a solution near psi_prev(2)
+            psi1 = vpasolve(psi_eqn, x, psi_prev(1));   % numerical solver for equation and finds a solution near psi_prev(2)
             % the numerical solver also solves the taylor expansion which
             % has 1 real and 4 complex roots
 
@@ -400,27 +372,31 @@ classdef Robot < handle
 %             disp(psi1);
             
 %             psi2 = interp1(psi_all, psi_all, psi_prev(2), 'nearest')
-%             psi2 = c1/c2*(theta(1) - psi1) + theta(2);
-
-            psi = [0, double(psi2)]; %forcing psi 1 as zero, based on the experiment
+            psi2 = c1/c2*(theta(1) - psi1) + theta(2);
+             
+            psi = [double(psi1), double(psi2)]; %forcing psi 1 as zero, based on the experiment
 
         end
 
-        function psi = tors_comp(self, alpha, link_len)
+        function psi = tors_comp(self, alpha, link_len, rho)
 
             options = optimoptions('fmincon', 'Display', 'off');
-            psi = fmincon(@(x) self.energy_eqn(x, alpha, link_len), alpha, ...
+            psi = fmincon(@(x) self.energy_eqn(x, alpha, link_len, rho), alpha, ...
                 [], [], [], [], [], [], [], options);
 
-
+            disp("alpha")
+            disp(alpha)
+            disp("psi")
+            disp(psi)
         end
 
-        function U = energy_eqn(self, psi, alpha, link_len)
+        function U = energy_eqn(self, psi, alpha, link_len, rho)
 
-            [chi, gamma] = self.in_plane_param(psi);
+            [chi, gamma] = self.in_plane_param(psi, rho);
 
             x_u = 0;
             y_u = 0;
+%             xy_u = 0;
             t_u = 0;
 
             I = [self.tubes(1).I, self.tubes(2).I];
@@ -429,22 +405,33 @@ classdef Robot < handle
             J = [self.tubes(1).J, self.tubes(2).J];
             Ls = [self.tubes(1).l, self.tubes(2).l];
 
-            k = [self.tubes(1).k, self.tubes(1).k, 0;
-                 0, self.tubes(2).k, self.tubes(2).k];
+%             k = [self.tubes(1).k, self.tubes(1).k, 0;
+%                  0, self.tubes(2).k, self.tubes(2).k];
+            k1 = self.tubes(1).k;
+            k2 = self.tubes(2).k;
+
+            c1 = G*J(1)/Ls(1);
+            c2 = G*J(2)/Ls(2);
+            c3 = E*E*I(1)*I(2)*k1*k2/(E*I(1)+E*I(2));
+            c4 = E*((I(1)*I(2))/(I(1)+I(2)));
 
             for i=1:2
                 t_u = t_u + (G*J(i)/(2*Ls(i)))*(alpha(i) - psi(i))^2;
             end
 
-            for j = 1:3
-                for i =1:2
+            xy_u = link_len(2)*c3*((k1/(2*k2))-cos(psi(1)-psi(2)) + (k2/(2*k1))) + (link_len(1)/2)*c4*k1*k1;
 
-                    x_u = x_u + E*I(i)*link_len(j)/2*(chi(j) - k(i,j)*cos(psi(i)))^2;
-                    y_u = y_u + E*I(i)*link_len(j)/2*(gamma(j) - k(i,j)*sin(psi(i)))^2;
-                end
-            end
+%             for j = 1:3
+%                 for i =1:2
+% 
+%                     x_u = x_u + E*I(i)*link_len(j)/2*(chi(j) - k(i,j)*cos(psi(i)))^2;
+%                     y_u = y_u + E*I(i)*link_len(j)/2*(gamma(j) - k(i,j)*sin(psi(i)))^2;
+%                 end
+%             end
+% 
+%             U = t_u+x_u+y_u;
 
-            U = t_u+x_u+y_u;
+            U = t_u+xy_u;
             
         end
 
@@ -454,27 +441,27 @@ classdef Robot < handle
             % First we get the link lengths
             s = get_links(self, q_var);
 
+            rho = get_rho_values(self, q_var);
+
             % Next we get the values for theta
             theta = get_theta(self, q_var);
-            self.Theta  = theta;
+%             self.Theta  = theta;
             
             % we calculate psi using energy minimisation
-            psi = tors_comp(self, theta, s);
+            psi = tors_comp(self, theta, s, rho);
             
             % we calculate psi using the analytical solution
 %             psi = analytical_soln(self, theta, s, psi_prev);
-            self.Psi = psi;
+            
+%             self.Psi = psi;
 
             % Now we calculate the phi and kappa values
-            [phi,K] = calculate_phi_and_kappa(self, psi);
+            [self.phi,K] = calculate_phi_and_kappa(self, psi, rho);
+            
 
             % Finally we calculate the ending transform
-            T = calculate_transform(self, s, phi, K);
+            T = calculate_transform(self, s, self.phi, K);
 
-            if self.plotOn
-                plot_tube(self, q_var, s, phi, K)
-                w = waitforbuttonpress;
-            end
             
         end
 
