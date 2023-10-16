@@ -18,10 +18,9 @@ robot = Robot(tubes, false);    % robot object (to call forward kinematics of ro
 % enter filename / filepath if different folder
 % filename = 'data_files/18_04_23-16_13_2-tubes_rotate';
 % filename = 'D:/FichStuff/CTR_Fall23/2023-10-6_05-47-00.csv';
-% filename = 'D:/FichStuff/CTR_Fall23/2023-10-7_03-06-44.csv';
+filename = 'D:/FichStuff/CTR_Fall23/2023-10-7_03-06-44.csv';
 % filename = 'D:/FichStuff/CTR_Fall23/2023-10-9_02-10-58.csv';
 % filename = 'D:/FichStuff/CTR_Fall23/CTR_Kinematic_Verification/data_script_cSharp_api/data_files/output.csv';
-filename = 'data_files/2023-10-7_03-06-44.csv';
 
 T1 = readtable(filename, 'Format','auto');
 
