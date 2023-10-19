@@ -13,7 +13,7 @@ robot = Robot(tubes, false);
 
 % set the increment [degrees], end point [degrees], and calculate the number of
 % points in the set
-increment = 5;
+increment = 1;
 end_point = 360;
 num_points = floor(end_point / increment) + 1;
 
@@ -23,6 +23,7 @@ q_var = zeros(num_points,4);
 
 % set the rotation for tube 2 to the rotation values
 for j = 1:num_points
+    q_var(j,2) = 30;
     q_var(j,4) = rotations(j);
 end
 
@@ -33,6 +34,8 @@ T_em = {};              % energy minimazation transformations
 T_as = {};              % analytical solution transformations
 psi_prev_em = [0,0];
 psi_prev_as = [0,0];
+psi_em = zeros(num_points, 2);
+psi_as = zeros(num_points, 2);
 for i = 1:num_points
     % calculate pcc kinematics
     t_pcc = robot.fkin(q_var(i,:));
@@ -40,13 +43,15 @@ for i = 1:num_points
 
     % calculate energy minimization kinematics
     [t_em, psi_prev_em] = robot.fkin_tors_em(q_var(i,:), psi_prev_em);
+    psi_em(i,:) = psi_prev_em;
     T_em{i} = t_em;
 
     % calculate analytical solution kinematics
     [t_as, psi_prev_as] = robot.fkin_tors_as(q_var(i,:),psi_prev_as);
+    psi_as(i,:) = psi_prev_as;
     T_as{i} = t_as;
 
     disp("Point " + i);
 end
 
-save("torsion_compare.mat", "T_pcc", "T_em", "T_as", "rotations")
+save("torsion_compare.mat", "T_pcc", "T_em", "T_as", "rotations", "psi_em", "psi_as")

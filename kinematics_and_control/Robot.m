@@ -472,11 +472,11 @@ classdef Robot < handle
 
         % Calculate fkin using energy minimization
         function [T,psi] = fkin_tors_em(self, q_var, psi_prev)           
-            
-            % First we get the link lengths
-            s = get_links(self, q_var);
 
             rho = get_rho_values(self, q_var);
+
+            % First we get the link lengths
+            s = get_links(self, rho);
 
             % Next we get the values for theta
             theta = get_theta(self, q_var);
@@ -496,14 +496,12 @@ classdef Robot < handle
 
         function [T,psi] = fkin_tors_as(self, q_var, psi_prev)           
             
-            % First we get the link lengths
-            s = get_links(self, q_var);
-
             rho = get_rho_values(self, q_var);
+            % First we get the link lengths
+            s = get_links(self, rho);
 
             % Next we get the values for theta
             theta = get_theta(self, q_var);
-%             self.Theta  = theta;
             
             % we calculate psi using the analytical solution
             psi = analytical_soln(self, theta, s, psi_prev);
