@@ -354,8 +354,8 @@ classdef Robot < handle
             b2 = c1/c2;
 
             % eqn for psi 1
-            taylor_expansion = taylor(link_len(2)*b1*sin(theta(2) + b2*theta(1) -(1+b2)*x) - x, x);
-            psi_eqn = taylor_expansion + theta(1) == 0;
+            taylor_expansion = taylor(link_len(2)*b1*sin(theta(2) + b2*theta(1) -(1+b2)*x), x, psi_prev(1));
+            psi_eqn = taylor_expansion - x + theta(1) == 0;
 
             % equation rewritten for psi 2
 %             taylor_expansion = link_len(2)*b1*b2*sin(x - theta(1) + (1/b2)*(x-theta(2)));        % not this not a expansion, but the eqn itself
@@ -363,7 +363,7 @@ classdef Robot < handle
 
 %             psi_all = solve(psi_eqn, x,"Real",true, "PrincipalValue",true, "MaxDegree", 4); 
             
-            psi1 = vpasolve(psi_eqn, x, psi_prev(1));   % numerical solver for equation and finds a solution near psi_prev(2)
+            psi_sol = vpasolve(psi_eqn, x, psi_prev(1));   % numerical solver for equation and finds a solution near psi_prev(2)
             % the numerical solver also solves the taylor expansion which
             % has 1 real and 4 complex roots
 
@@ -372,23 +372,58 @@ classdef Robot < handle
 %             disp(psi1);
             
 %             psi2 = interp1(psi_all, psi_all, psi_prev(2), 'nearest')
+%             psi1 = interp1(psi_sol, psi_sol, psi_prev(1), 'nearest');
+            psi1 = psi_sol(1);
             psi2 = c1/c2*(theta(1) - psi1) + theta(2);
              
             psi = [double(psi1), double(psi2)]; %forcing psi 1 as zero, based on the experiment
 
         end
 
-        function psi = tors_comp(self, alpha, link_len, rho)
+        function psi = tors_comp(self, alpha, k)
 
             options = optimoptions('fmincon', 'Display', 'off');
-            psi = fmincon(@(x) self.energy_eqn(x, alpha, link_len, rho), alpha, ...
+            psi = fmincon(@(x) self.new_energy_eqn(x, alpha, k), alpha, ...
                 [], [], [], [], [], [], [], options);
 
-            disp("alpha")
-            disp(alpha)
-            disp("psi")
-            disp(psi)
+%             disp("alpha")
+%             disp(alpha)
+%             disp("psi")
+%             disp(psi)
         end
+
+        function U = new_energy_eqn(self,psi,alpha,k)
+            psi1 = psi(1);
+            psi2 = psi(2);
+            alpha1 = alpha(1);
+            alpha2 = alpha(2);
+
+            G = self.tubes(1).G;
+            E = self.tubes(1).E;
+            J = [self.tubes(1).J self.tubes(2).J];
+            L = [self.tubes(1).l self.tubes(2).l];
+            I1 = self.tubes(1).I;
+            I2 = self.tubes(2).I;
+            l1 = self.tubes(1).d;
+            l2 = self.tubes(2).d;
+
+            Utors = G * J(1) / (2*L(1)) * (alpha1 - psi1)^2 + ...
+                    G * J(2) / (2*L(2)) * (alpha2 - psi2)^2;
+    
+            chi1 = (E*I1*k(1)*cos(psi1))/(E*I1+E*I2);
+            chi2 = (E*I1*k(1)*cos(psi1) + E*I2*k(2)*cos(psi2))/ (E*I1 + E*I2);
+            
+            gamma1 = (E*I1*k(1)*sin(psi1))/(E*I1+E*I2);
+            gamma2 = (E*I1*k(1)*sin(psi1) + E*I2*k(2)*sin(psi2))/ (E*I1 + E*I2);
+            
+            UbendX = E*I1*l1/2 * (chi1 - k(1) * cos(psi1))^2 + E*I2*l1/2 * chi1^2 + E*I1*l2/2 * (chi2 - k(1) * cos(psi1))^2 + E*I2*l2/2 * (chi2 - k(2) * cos(psi2))^2;
+            UbendY = E*I1*l1/2 * (gamma1 - k(1) * sin(psi1))^2 + E*I2*l1/2 * gamma1^2 + E*I1*l2/2 * (gamma2 - k(1) * sin(psi1))^2 + E*I2*l2/2 * (gamma2 - k(2) * sin(psi2))^2;
+            
+            Ubend = UbendX + UbendY;
+            %pretty(collect(simplify(Ubend), [l1 l2]))
+            U = Ubend + Utors;
+        end
+
 
         function U = energy_eqn(self, psi, alpha, link_len, rho)
 
@@ -435,8 +470,8 @@ classdef Robot < handle
             
         end
 
-
-        function T = fkin_tors(self, q_var, psi_prev)           
+        % Calculate fkin using energy minimization
+        function [T,psi] = fkin_tors_em(self, q_var, psi_prev)           
             
             % First we get the link lengths
             s = get_links(self, q_var);
@@ -448,21 +483,36 @@ classdef Robot < handle
 %             self.Theta  = theta;
             
             % we calculate psi using energy minimisation
-            psi = tors_comp(self, theta, s, rho);
-            
-            % we calculate psi using the analytical solution
-%             psi = analytical_soln(self, theta, s, psi_prev);
-            
-%             self.Psi = psi;
+%             psi = tors_comp(self, theta, s, rho);
+            psi = tors_comp(self, theta, [self.tubes(1).k, self.tubes(2).k]);
 
             % Now we calculate the phi and kappa values
-            [self.phi,K] = calculate_phi_and_kappa(self, psi, rho);
-            
+            [self.phi,self.kappa] = calculate_phi_and_kappa(self, psi, rho);
 
             % Finally we calculate the ending transform
-            T = calculate_transform(self, s, self.phi, K);
+            T = calculate_transform(self, s, self.phi, self.kappa);
+        end
 
+
+        function [T,psi] = fkin_tors_as(self, q_var, psi_prev)           
             
+            % First we get the link lengths
+            s = get_links(self, q_var);
+
+            rho = get_rho_values(self, q_var);
+
+            % Next we get the values for theta
+            theta = get_theta(self, q_var);
+%             self.Theta  = theta;
+            
+            % we calculate psi using the analytical solution
+            psi = analytical_soln(self, theta, s, psi_prev);
+
+            % Now we calculate the phi and kappa values
+            [self.phi,self.kappa] = calculate_phi_and_kappa(self, psi, rho);
+
+            % Finally we calculate the ending transform
+            T = calculate_transform(self, s, self.phi, self.kappa);
         end
 
     end
