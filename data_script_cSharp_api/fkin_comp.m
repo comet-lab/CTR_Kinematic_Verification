@@ -1,18 +1,31 @@
- % mocap vs FKin
+clear;
+% mocap vs FKin
 
 % Initialize test information and flags
 num_tubes = 2;      % number of tubes for test
 
 tube1 = Tube(2.792*10^-3, 3.3*10^-3, 1/17, 90*10^-3, 50*10^-3, 1935*10^6);
-tube2 = Tube(2.132*10^-3, 2.64*10^-3, 1/23, 170*10^-3, 50*10^-3, 1935*10^6);
+tube2 = Tube(2.132*10^-3, 2.64*10^-3, 1/22, 170*10^-3, 50*10^-3, 1935*10^6);
 tube3 = Tube(1.472*10^-3, 1.98*10^-3, 1/29, 250*10^-3, 50*10^-3, 193*10^6);
 
-test_points = 20;   % number of test points
+test_points = 21;   % number of test points
 fpp = 20;           % number of frames per point
 
 tubes = [tube1, tube2];
+psi_prev = [0,0];
 
 robot = Robot(tubes, false);    % robot object (to call forward kinematics of robot)
+
+% choose default method for fkin
+% 0 - Piecewise Constant Curvature
+% 1 - Analytical Solution
+% 2 - Energy Minimisation
+m_flag = 1;
+
+
+% set flag to true to compare defualt method to both PCC and mocap
+compare_flag = false;
+
 
 
 % enter filename / filepath if different folder
@@ -21,7 +34,9 @@ robot = Robot(tubes, false);    % robot object (to call forward kinematics of ro
 % filename = 'D:/FichStuff/CTR_Fall23/2023-10-7_03-06-44.csv';
 % filename = 'D:/FichStuff/CTR_Fall23/2023-10-9_02-10-58.csv';
 % filename = 'D:/FichStuff/CTR_Fall23/CTR_Kinematic_Verification/data_script_cSharp_api/data_files/output.csv';
-filename = 'data_files/2023-10-7_03-06-44.csv';
+% filename = 'D:/FichStuff/CTR_Fall23/2023-10-19_04-18-50.csv';
+% filename = 'D:/FichStuff/CTR_Fall23/2023-10-18_02-46-29.csv';
+filename = 'D:/FichStuff/CTR_Fall23/TestData/2023-10-9_02-10-58.csv';
 
 T1 = readtable(filename, 'Format','auto');
 
@@ -49,7 +64,7 @@ hf_mocap_data = table2array([T1(1:test_points*fpp,18),T1(1:test_points*fpp,19),T
                     T1(1:test_points*fpp,21), T1(1:test_points*fpp,22),T1(1:test_points*fpp,23), T1(1:test_points*fpp,24)]);
 
 
-for i = 1:test_points   
+for i = 1:test_points
     
     % Averaging the data across the number of frames per point
     
@@ -120,10 +135,22 @@ for i = 1:test_points
     % x j            -> j transformations for each joint pose (j = 2*no_of_tubes - 1)
     % x n            -> iterating trhough the test points
    
-%     TT(:,:,i) = robot.fkin_tors(q_tubes(i,:), [0, 0]);
-    TT(:,:,i) = robot.fkin(q_tubes(i,:));
+    
+    if m_flag == 0
+        TT(:,:,i) = robot.fkin(q_tubes(i,:));
+    elseif m_flag == 1
+        [TT(:,:,i), psi(:,i)] = robot.fkin_tors_as(q_tubes(i,:), psi_prev);
+        psi_prev = psi(:,i);
+        psi_deg = (psi')*(180/3.14159);
+    elseif m_flag == 2
+        [TT(:,:,i), psi(:,i)] = robot.fkin_tors_em(q_tubes(i,:), psi_prev);
+        psi_prev = psi(:,i);
+        psi_deg = (psi')*(180/3.14159);
+    end
+    
 
     
+    theta_deg = q_tubes(:, 3:4);
     % Robot_home in the forward kinematics model
     % is attached to the start of the curved section of 
     % the outer most tube
@@ -195,7 +222,13 @@ ylim([-25, 75]);
 xlabel("Test Points")
 ylabel("Position [mm]");
 title("X Position");
-legend("FK w/o torsion", "Mocap");
+if m_flag == 0
+    legend("FK w/o torsion", "Mocap");
+elseif m_flag ==1
+    legend("FK w torsion (AS)", "Mocap");
+else
+    legend("FK w torsion (EM)", "Mocap");
+end
 
 subplot(3,1,2)
 plot(range, [ee_fk_pos_mm(:,2), ee_hf_pos_mm(:,2)]);
@@ -206,7 +239,13 @@ ylim([-50, 50]);
 xlabel("Test Points")
 ylabel("Position [mm]");
 title("Y Position");
-legend("FK w/o torsion", "Mocap");
+if m_flag == 0
+    legend("FK w/o torsion", "Mocap");
+elseif m_flag ==1
+    legend("FK w torsion (AS)", "Mocap");
+else
+    legend("FK w torsion (EM)", "Mocap");
+end
 
 subplot(3,1,3)
 plot(range, [ee_fk_pos_mm(:,3), ee_hf_pos_mm(:,3)]);
@@ -217,7 +256,13 @@ ylim([25, 125]);
 xlabel("Test Points")
 ylabel("Position [mm]");
 title("Z Position");
-legend("FK w/o torsion", "Mocap");
+if m_flag == 0
+    legend("FK w/o torsion", "Mocap");
+elseif m_flag ==1
+    legend("FK w torsion (AS)", "Mocap");
+else
+    legend("FK w torsion (EM)", "Mocap");
+end
 
 sgtitle("XYZ Positions")
 
@@ -229,4 +274,30 @@ set(gca,'FontSize',16,'fontWeight','bold')
 set(findall(gcf,'type','text'),'FontSize',16,'fontWeight','bold')
 xlabel("Error in tip position")
 ylabel("[mm]");
-title("Error box plot (21 datapoints)");
+title("Error box plot (" + test_points +"datapoints)");
+
+
+if m_flag > 0
+    figure(3)
+    subplot(2,1,1)
+    plot(range, [psi_deg(:,1), theta_deg(:,1)]);
+    grid on;
+    set(gca,'FontSize',16,'fontWeight','bold')
+    set(findall(gcf,'type','text'),'FontSize',16,'fontWeight','bold')
+    xlabel("Test Points");
+    ylabel("[deg]");
+    title("Psi 1 vs Theta 1")
+    legend("Psi", "Theta");
+    
+    subplot(2,1,2)
+    plot(range, [psi_deg(:,2), theta_deg(:,2)]);
+    grid on;
+    set(gca,'FontSize',16,'fontWeight','bold')
+    set(findall(gcf,'type','text'),'FontSize',16,'fontWeight','bold')
+    xlabel("Test Points");
+    ylabel("[deg]");
+    title("Psi 2 vs Theta 2")
+    legend("Psi", "Theta");
+
+    sgtitle("PSI vs THETA")
+end

@@ -1,7 +1,7 @@
 clear% Initialize test information
-num_tubes = 3; % number of tubes for test
+num_tubes = 2; % number of tubes for test
 
-num_pts = 20;  % number of test points
+num_pts = 10;  % number of test points
 rotation = true; % true if test includes rotation
 
 % Create a random list of joint variables
@@ -39,5 +39,5 @@ end
 
 % filename = "data_files/" + date + "_" + int2str(num_tubes) + "-tubes_" + test_string + ".csv";
 
-filename = "data_files/jointvariables.csv";
+filename = "jointvariables.csv";
 writematrix(comb_list, filename);

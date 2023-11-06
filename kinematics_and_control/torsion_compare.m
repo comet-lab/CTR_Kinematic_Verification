@@ -1,9 +1,9 @@
 clc; clear; 
 
 % Define our tubes (ID, OD, r (1/K), l, d, E)
-tube1 = Tube(3.046*10^-3, 3.3*10^-3, 1/17, 90*10^-3, 50*10^-3, 1935*10^6);
-tube2 = Tube(2.386*10^-3, 2.64*10^-3, 1/22, 170*10^-3, 50*10^-3, 1935*10^6);
-tube3 = Tube(1.726*10^-3, 1.98*10^-3, 1/29, 250*10^-3, 50*10^-3, 1935*10^6);
+tube1 = Tube(2.792*10^-3, 3.3*10^-3, 1/17, 90*10^-3, 50*10^-3, 400*10^6);
+tube2 = Tube(2.132*10^-3, 2.64*10^-3, 1/22, 170*10^-3, 50*10^-3, 400*10^6);
+tube3 = Tube(1.472*10^-3, 1.98*10^-3, 1/29, 250*10^-3, 50*10^-3, 400*10^6);
 
 % define our array of tubes
 tubes = [tube1, tube2];
@@ -18,7 +18,7 @@ end_point = 360;
 num_points = floor(end_point / increment) + 1;
 
 % declare array of rotation values for joint 2 and an empty q_var array
-rotations = 0:increment:end_point;
+rotations = end_point:-increment:0;
 q_var = zeros(num_points,4);
 
 % set the rotation for tube 2 to the rotation values

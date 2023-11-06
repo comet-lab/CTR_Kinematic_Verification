@@ -23,7 +23,7 @@ plot(rotations, [pcc_pos(:,1), em_pos(:,1), as_pos(:,1)]);
 grid on;
 set(gca,'FontSize',16,'fontWeight','bold')
 set(findall(gcf,'type','text'),'FontSize',16,'fontWeight','bold')
-ylim([0, 30]);
+% ylim([0, 30]);
 xlabel("Theta2 [deg]")
 ylabel("Position [mm]");
 title("X Position");
@@ -34,7 +34,7 @@ plot(rotations, [pcc_pos(:,2), em_pos(:,2), as_pos(:,2)]);
 grid on;
 set(gca,'FontSize',16,'fontWeight','bold')
 set(findall(gcf,'type','text'),'FontSize',16,'fontWeight','bold')
-ylim([-30, 30]);
+% ylim([-30, 30]);
 xlabel("Theta2 [deg]")
 ylabel("Position [mm]");
 title("Y Position");
@@ -45,7 +45,7 @@ plot(rotations, [pcc_pos(:,3), em_pos(:,3), as_pos(:,3)]);
 grid on;
 set(gca,'FontSize',16,'fontWeight','bold')
 set(findall(gcf,'type','text'),'FontSize',16,'fontWeight','bold')
-ylim([40, 60]);
+% ylim([40, 60]);
 xlabel("Theta2 [deg]")
 ylabel("Position [mm]");
 title("Z Position");
@@ -66,7 +66,7 @@ plot(range, [alpha(:,1), psi_as(:,1)]);
 grid on;
 set(gca,'FontSize',16,'fontWeight','bold')
 set(findall(gcf,'type','text'),'FontSize',16,'fontWeight','bold')
-ylim([-2,10]);
+% ylim([-2,10]);
 xlabel("Point Num")
 ylabel("Angle [rad]");
 title("Tube 1");
@@ -77,7 +77,7 @@ plot(range, [alpha(:,2), psi_as(:,2)]);
 grid on;
 set(gca,'FontSize',16,'fontWeight','bold')
 set(findall(gcf,'type','text'),'FontSize',16,'fontWeight','bold')
-ylim([-2,10]);
+% ylim([-2,10]);
 xlabel("Point Num")
 ylabel("Angle [rad]");
 title("Tube 2");
@@ -98,7 +98,7 @@ plot(range, [alpha(:,1), psi_em(:,1)]);
 grid on;
 set(gca,'FontSize',16,'fontWeight','bold')
 set(findall(gcf,'type','text'),'FontSize',16,'fontWeight','bold')
-ylim([-2,10]);
+% ylim([-2,10]);
 xlabel("Point Num")
 ylabel("Angle [rad]");
 title("Tube 1");
@@ -109,7 +109,7 @@ plot(range, [alpha(:,2), psi_em(:,2)]);
 grid on;
 set(gca,'FontSize',16,'fontWeight','bold')
 set(findall(gcf,'type','text'),'FontSize',16,'fontWeight','bold')
-ylim([-2,10]);
+% ylim([-2,10]);
 xlabel("Point Num")
 ylabel("Angle [rad]");
 title("Tube 2");

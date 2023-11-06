@@ -364,7 +364,7 @@ classdef Robot < handle
 
 %             psi_all = solve(psi_eqn, x,"Real",true, "PrincipalValue",true, "MaxDegree", 4); 
             
-            psi_sol = vpasolve(psi_eqn, x, psi_prev(1));   % numerical solver for equation and finds a solution near psi_prev(2)
+            psi_sol = vpasolve(psi_eqn, x, psi_prev(1))   % numerical solver for equation and finds a solution near psi_prev(2)
             % the numerical solver also solves the taylor expansion which
             % has 1 real and 4 complex roots
 
@@ -517,13 +517,11 @@ classdef Robot < handle
             
             % interpolate values between psi_prev and psi
             range = self.theta_start:q_var(3);
-            psi = [0, 0];
-            for i = 1:size(range, 2)
+            for i = 1:size(range)
                 % we calculate psi using the analytical solution
-                psi = analytical_soln(self, [deg2rad(range(i)), theta(2)], s, psi_prev);
+                psi = analytical_soln(self, theta, s, psi_prev);
                 psi_prev = psi;
             end
-            self.theta_start = q_var(3);
 
 %             % we calculate psi using the analytical solution
 %             psi = analytical_soln(self, theta, s, psi_prev);
