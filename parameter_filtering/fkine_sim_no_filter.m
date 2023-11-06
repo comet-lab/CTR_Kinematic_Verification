@@ -1,3 +1,5 @@
+function fkine_sim_no_filter()
+
 % This script simulates motion of a pair of 2-tube concentric tube robots.
 % One robot has tubes that never plastically deform, while the other
 % robot's tubes plastically deform according to the piecewise function
@@ -19,8 +21,11 @@ addpath('../kinematics_and_control')
 % Create two robots: one to represent the "real" material parameters and
 % one to represent the "modeled" material parameters. Each robot will have
 % two tubes.
-robot_real = Robot(2, false);
-robot_modeled = Robot(2, false);
+tube1 = Tube(2.792*10^-3, 3.3*10^-3, 1/17, 90*10^-3, 50*10^-3, 1935*10^6);
+tube2 = Tube(2.132*10^-3, 2.64*10^-3, 1/22, 170*10^-3, 50*10^-3, 1935*10^6);
+tubes = [tube1 tube2];
+robot_real = Robot(tubes, false);
+robot_modeled = Robot(tubes, false);
 
 % Generate a time series
 t = 0:0.01:30;
@@ -69,8 +74,8 @@ for i=1:num_steps
     k = get_k(t(i), k_initial, k_final);
 
     % Apply the calculated precurvatures to the real robot
-    robot_real.tube1.k = k(1);
-    robot_real.tube2.k = k(2);
+    robot_real.tubes(1).k = k(1);
+    robot_real.tubes(2).k = k(2);
 
     % Add these k values to the storage matrix
     k_all_real(:, i) = k';
@@ -86,7 +91,7 @@ for i=1:num_steps
 
     % Multiply the transformation matrices together to get the overall
     % transformation matrix
-    T_real = T_real(:,:,1) * T_real(:,:,2) * T_real(:,:,3);
+    % T_real = T_real(:,:,1) * T_real(:,:,2) * T_real(:,:,3);
 
     % Extract the tip position from the transformation matrix
     xyz_real = T_real(1:3,4);
@@ -104,8 +109,8 @@ for i=1:num_steps
     q = get_q(t(i), q_target);
 
     % The precurvature of the modeled robot remains constant
-    robot_modeled.tube1.k = k_initial(1);
-    robot_modeled.tube2.k = k_initial(2);
+    robot_modeled.tubes(1).k = k_initial(1);
+    robot_modeled.tubes(2).k = k_initial(2);
 
     % Add the k values to the storage matrix
     k_all_modeled(:, i) = k_initial';
@@ -115,7 +120,7 @@ for i=1:num_steps
 
     % Multiply the transformation matrices together to get the overall
     % transformation matrix
-    T_modeled = T_modeled(:,:,1) * T_modeled(:,:,2) * T_modeled(:,:,3);
+    % T_modeled = T_modeled(:,:,1) * T_modeled(:,:,2) * T_modeled(:,:,3);
 
     % Extract the tip position from the transformation matrix
     xyz_modeled = T_modeled(1:3,4);
@@ -168,6 +173,8 @@ function q = get_q(t, q_target)
 
     t_mod = mod(t, 10);
 
+    disp(num_steps);
+
     if t_mod <= 5
         q = q_target * t_mod/5;
     else 
@@ -186,4 +193,6 @@ function k = get_k(t, k_initial, k_final)
     elseif t <= 30
         k = k_final;
     end
+end
+
 end

@@ -1,0 +1,16 @@
+close all; clear all; clc;
+
+load("morris_screen_rho.mat");
+
+figure 
+hold on
+
+for i=1:num_values
+    
+    x_val = 
+    
+    for j=1:num_values
+
+        scatter3()
+    end
+end
