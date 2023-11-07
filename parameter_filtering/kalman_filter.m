@@ -14,30 +14,35 @@ function [x_correct,covariance_correct] = kalman_filter(covariance_prev, predict
 % only care about previous curvature values. We assume that curvature does
 % not change, so our prediction matches our previous curvature values.
 F = [0 0 0 0 0;
-    0 0 0 0 0;
-    0 0 0 0 0;
-    0 0 0 1 0;
-    0 0 0 0 1];
+     0 0 0 0 0;
+     0 0 0 0 0;
+     0 0 0 1 0;
+     0 0 0 0 1];
 
 % Q represents the process noise. We assume there is no noise in our robot
 % motion, but we add some noise to the curvature values.
-Q = [0.01 0.01 0.01 0.2 0.2;
-     0.01 0.01 0.01 0.2 0.2;
-     0.01 0.01 0.01 0.2 0.2;
-     0.2 0.2 0.2 0.01 0.01;
-     0.2 0.2 0.2 0.01 0.01];
+% Q = [0 0 0 0    0;
+%      0 0 0 0    0;
+%      0 0 0 0    0;
+%      0 0 0 0.01 0.01;
+%      0 0 0 0.01 0.01];
+Q = 0.1 * ones([5 5]);
+Q(4, 1:3) = 10;
+Q(4, 4:5) = 1;
+Q(5, 1:3) = 10;
+Q(5, 4:5) = 3;
 
 % H is the observation function. We assume that we can observe tip position
 % but not curvature
 H = [1 0 0 0 0;
-    0 1 0 0 0;
-    0 0 1 0 0];
+     0 1 0 0 0;
+     0 0 1 0 0];
 
 % R represents the observation noise. We assume that we can observe tip
 % position perfectly, so this matrix will be filled with zeros.
-R = 0.01 + [0 0 0;
-    0 0 0;
-    0 0 0];
+R = [0 0 0;
+     0 0 0;
+     0 0 0];
 
 %% Prediction
 

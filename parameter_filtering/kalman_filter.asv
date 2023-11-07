@@ -13,11 +13,19 @@ function [x_correct,covariance_correct] = kalman_filter(covariance_prev, predict
 % Therefore we do not care about the previous values of x, y, and z; we
 % only care about previous curvature values. We assume that curvature does
 % not change, so our prediction matches our previous curvature values.
+<<<<<<< HEAD
 F = [0 0 0 0 0;
      0 0 0 0 0;
      0 0 0 0 0;
      0 0 0 1 0;
      0 0 0 0 1];
+=======
+F = [1 0 0 0 0;
+     0 1 0 0 0;
+     0 0 1 0 0;
+     0 0 0 1 0;
+     0 0 0 0.1 1];
+>>>>>>> f57264a6e767de582ae463d6fcffe8fce601a714
 
 % Q represents the process noise. We assume there is no noise in our robot
 % motion, but we add some noise to the curvature values.
@@ -27,6 +35,7 @@ F = [0 0 0 0 0;
 %      0 0 0 0.01 0.01;
 %      0 0 0 0.01 0.01];
 Q = 0.1 * ones([5 5]);
+<<<<<<< HEAD
 Q(4:5, 1:3) = 10;
 Q(1:3, 4:5) = 10;
 Q(1, 1) = 1;
@@ -36,6 +45,10 @@ Q(4, 4) = 1;
 Q(5, 5) = 1;
 Q(4, 5) = 3;
 Q(5, 4) = 3;
+=======
+Q(4:5, 1:3) = 1;
+Q(4:5, 4:5) = 0.5;
+>>>>>>> f57264a6e767de582ae463d6fcffe8fce601a714
 
 % H is the observation function. We assume that we can observe tip position
 % but not curvature
@@ -63,11 +76,14 @@ x_correct = x_predict + K * (observation - H * x_predict);
 
 covariance_correct = covariance_predict - K * H * covariance_predict;
 
+<<<<<<< HEAD
 if norm()
     disp(covariance_correct);
     disp(covariance_correct - covariance_correct');
     error("covar matrix not symmetric");
 end
 
+=======
+>>>>>>> f57264a6e767de582ae463d6fcffe8fce601a714
 end
 

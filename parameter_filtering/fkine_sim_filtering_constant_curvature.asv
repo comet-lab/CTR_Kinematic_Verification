@@ -19,11 +19,16 @@ addpath('../kinematics_and_control')
 % Create two robots: one to represent the "real" material parameters and
 % one to represent the "modeled" material parameters. Each robot will have
 % two tubes.
+<<<<<<< HEAD
 tube1 = Tube(2.792*10^-3, 3.3*10^-3, 1/17, 90*10^-3, 50*10^-3, 1935*10^6);
 tube2 = Tube(2.132*10^-3, 2.64*10^-3, 1/22, 170*10^-3, 50*10^-3, 1935*10^6);
 tubes = [tube1 tube2];
 robot_real = Robot(tubes, false);
 robot_guess = Robot(tubes, false);
+=======
+robot_real = Robot(2, false);
+robot_guess = Robot(2, false);
+>>>>>>> f57264a6e767de582ae463d6fcffe8fce601a714
 
 % Generate a time series
 t = 0:0.01:30;
@@ -37,7 +42,11 @@ q0 = [0 0 0 0];
 % Takes the form [rho1 rho2 theta1 theta2], where rhoi is the translation
 % applied to tube i in [mm] and thetai is the rotation applied to the base
 % of tube i in [deg]
+<<<<<<< HEAD
 q_target = [40 10 30 80];
+=======
+q_target = [10 40 30 -90];
+>>>>>>> f57264a6e767de582ae463d6fcffe8fce601a714
 
 % The robot starts at these curvatures
 k_real = [6 7];
@@ -49,8 +58,13 @@ k_guess = [10 12];
 covariance_guess = [1 0 0 0.1 0.1;
                     0 1 0 0.1 0.1;
                     0 0 1 0.1 0.1;
+<<<<<<< HEAD
                     0.1 0.1 0.1 1 0.1;
                     0.1 0.1 0.1 0.1 1;];
+=======
+                    0 0 0 1 0.1;
+                    0 0 0 0.1 1;];
+>>>>>>> f57264a6e767de582ae463d6fcffe8fce601a714
 
 % Initialize matrices to hold all the values of k over time
 k_all_real = zeros([2, num_steps]);
@@ -78,8 +92,13 @@ for i=1:num_steps
     % curvature values.
 
     % Apply the calculated precurvatures to the real robot
+<<<<<<< HEAD
     robot_real.tubes(1).k = k_real(1);
     robot_real.tubes(2).k = k_real(2);
+=======
+    robot_real.tube1.k = k_real(1);
+    robot_real.tube2.k = k_real(2);
+>>>>>>> f57264a6e767de582ae463d6fcffe8fce601a714
 
     % Add these k values to the storage matrix
     k_all_real(:, i) = k_real';
@@ -89,7 +108,11 @@ for i=1:num_steps
 
     % Multiply the transformation matrices together to get the overall
     % transformation matrix
+<<<<<<< HEAD
     % T_real = T_real(:,:,1) * T_real(:,:,2) * T_real(:,:,3);
+=======
+    T_real = T_real(:,:,1) * T_real(:,:,2) * T_real(:,:,3);
+>>>>>>> f57264a6e767de582ae463d6fcffe8fce601a714
 
     % Extract the tip position from the transformation matrix
     xyz_real = T_real(1:3,4);
@@ -99,8 +122,13 @@ for i=1:num_steps
     % filtered curvature values.
 
     % The precurvature of the modeled robot remains constant
+<<<<<<< HEAD
     robot_guess.tubes(1).k = k_guess(1);
     robot_guess.tubes(2).k = k_guess(2);
+=======
+    robot_guess.tube1.k = k_guess(1);
+    robot_guess.tube2.k = k_guess(2);
+>>>>>>> f57264a6e767de582ae463d6fcffe8fce601a714
 
     % Add the k values to the storage matrix
     k_all_guess(:, i) = k_guess';
@@ -110,7 +138,11 @@ for i=1:num_steps
 
     % Multiply the transformation matrices together to get the overall
     % transformation matrix
+<<<<<<< HEAD
     % T_modeled = T_modeled(:,:,1) * T_modeled(:,:,2) * T_modeled(:,:,3);
+=======
+    T_modeled = T_modeled(:,:,1) * T_modeled(:,:,2) * T_modeled(:,:,3);
+>>>>>>> f57264a6e767de582ae463d6fcffe8fce601a714
 
     % Extract the tip position from the transformation matrix
     xyz_modeled = T_modeled(1:3,4);
@@ -118,6 +150,7 @@ for i=1:num_steps
 
     % Update k_guess using the kalman filter.
 
+<<<<<<< HEAD
     % Based on our actuation and our (bad) precurvature values, where do we
     % think we are? 
     prediction = [xyz_modeled; k_guess'];
@@ -133,6 +166,19 @@ for i=1:num_steps
     if mod(i, 100) == 0
 
     end
+=======
+    % % Based on our actuation and our (bad) precurvature values, where do we
+    % % think we are? 
+    % prediction = [xyz_modeled; k_guess'];
+    % % We observe the tip position of the real robot
+    % observation = xyz_real;
+    % 
+    % % Run the filter
+    % [state_correction, covariance_guess] = kalman_filter(covariance_guess, prediction, observation);
+    % % Extract the new k_guess from the corrected state values.
+    % k_guess(1) = state_correction(4);
+    % k_guess(2) = state_correction(5);
+>>>>>>> f57264a6e767de582ae463d6fcffe8fce601a714
 
 end
 
@@ -148,17 +194,25 @@ end
 % Convert [m] to [mm]
 error_scaled = error*1000;
 
+<<<<<<< HEAD
 % Convert curvature to bending radii
 k_all_guess = 1 ./ k_all_guess;
 k_all_real = 1 ./ k_all_real;
 
+=======
+>>>>>>> f57264a6e767de582ae463d6fcffe8fce601a714
 % Plot the error over time
 figure
 plot(t,error_scaled);
 xlabel("Time [sec]", "FontSize",16);
 ylabel("Tip Position Error [mm]", "FontSize",16);
+<<<<<<< HEAD
 ylim([0 10]);
 title(["Tip Position Error vs Time for Simulated" "Kinematics with Basic Kalman Filtering"], "FontSize",20);
+=======
+ylim([0 10])
+title(["Tip Position Error vs Time for Simulated" "Kinematics with Basic Kalman Filter"], "FontSize",20);
+>>>>>>> f57264a6e767de582ae463d6fcffe8fce601a714
 
 % Plot the k values over time
 figure
@@ -167,11 +221,19 @@ plot(t,k_all_guess(1,:), "Color","b", "LineStyle","-");
 plot(t,k_all_guess(2,:), "Color","r", "LineStyle","-");
 plot(t,k_all_real(1,:), "Color","b", "LineStyle","--");
 plot(t,k_all_real(2,:), "Color","r", "LineStyle","--");
+<<<<<<< HEAD
 xlabel("Time [sec]", "FontSize",16);
 ylim([.05 .2]);
 ylabel("Tube Radii [m]", "FontSize",16);
 title(["CTR Tube Bending Radii vs Time for" "Both Correct and Filtered Robots"], "FontSize", 20);
 legend(["Filtered Robot Tube 1", "Filtered Robot Tube 2", "Correct Robot Tube 1", "Correct Robot Tube 2"], "FontSize",14);
+=======
+xlabel("Time[sec]", "FontSize",16);
+ylim([5 13]);
+ylabel("Tube Curvatures [1/m]", "FontSize",16);
+title(["CTR Tube Curvatures vs Time for" "Both Real and Filtered Robots"], "FontSize", 20);
+legend(["Filtered Robot Tube 1", "Filtered Robot Tube 2", "Real Robot Tube 1", "Real Robot Tube 2"], "FontSize",14);
+>>>>>>> f57264a6e767de582ae463d6fcffe8fce601a714
 
 
 %% Helper Function to Track Values of q (Joint Variables)
