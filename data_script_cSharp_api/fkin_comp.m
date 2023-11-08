@@ -179,28 +179,23 @@ for i = 1:test_points
 
     % norm error for each position of robot tip
     % between the model and the mocap
-    pos_error(i,:) = norm(ee_fk_pos(i,:)) - norm(ee_hf_pos(i,:));
+    pos_error_norm(i,:) = norm(ee_fk_pos(i,:) - ee_hf_pos(i,:));
     
     % x,y,z error for each position of robot tip
     % between the model and the mocap
-    pos_c_error(i,:) = (ee_fk_pos(i,:) - ee_hf_pos(i,:))*10^3;
-    
-    % norm of the position of robot tip from the model
-    norm1(i,1) = norm(ee_fk_pos(i,:));
-    
-    % norm of the position of robot tip from the mocap
-    norm2(i,1) = norm(ee_hf_pos(i,:));
+    pos_error(i,:) = (ee_fk_pos(i,:) - ee_hf_pos(i,:))*10^3;
+
 
 end
 
-% RMSE across all the points for the position of robot tip
+% RMSE for individual coordinates of robot tip
 pos_error_t = rmse(ee_fk_pos, ee_hf_pos);
 disp("RMSE across coordinates: ")
 disp(pos_error_t);
 
-% RMSE across all the points for the norm of the position of robot tip
-rmse_t = rmse(norm1, norm2);
-disp("RMSE of norms: ")
+% RMSE of the position of robot tip
+rmse_t = sqrt(sum(power(pos_error_norm, 2))*(1/test_points));
+disp("RMSE: ")
 disp(rmse_t);
 
 
@@ -268,7 +263,7 @@ sgtitle("XYZ Positions")
 
 
 figure(2)
-boxplot(abs(norm1*10^3 - norm2*10^3));
+boxplot(pos_error_norm*10^3);
 grid on;
 set(gca,'FontSize',16,'fontWeight','bold')
 set(findall(gcf,'type','text'),'FontSize',16,'fontWeight','bold')
