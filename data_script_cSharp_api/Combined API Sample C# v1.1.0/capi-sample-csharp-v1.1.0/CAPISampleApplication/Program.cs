@@ -153,7 +153,7 @@ namespace NDI.CapiSampleApplication
             int end_flag = 0;
             int write_flag = 0;
 
-            SerialPort port = new SerialPort("COM4", 250000);
+            SerialPort port = new SerialPort("COM6", 250000);
             TextFieldParser parser = new TextFieldParser(fileRead);
 
             parser.TextFieldType = FieldType.Delimited;
