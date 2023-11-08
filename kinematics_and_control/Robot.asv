@@ -12,7 +12,7 @@ classdef Robot < handle
         lls = []
         phi = []
         kappa = []
-        theta_start = 0
+        theta_start = [0, 0]
 
         tubes = []
     end
@@ -364,7 +364,7 @@ classdef Robot < handle
 
 %             psi_all = solve(psi_eqn, x,"Real",true, "PrincipalValue",true, "MaxDegree", 4); 
             
-            psi_sol = vpasolve(psi_eqn, x, psi_prev(1))   % numerical solver for equation and finds a solution near psi_prev(2)
+            psi_sol = vpasolve(psi_eqn, x, psi_prev(1));   % numerical solver for equation and finds a solution near psi_prev(2)
             % the numerical solver also solves the taylor expansion which
             % has 1 real and 4 complex roots
 
@@ -516,12 +516,20 @@ classdef Robot < handle
             theta = get_theta(self, q_var);
             
             % interpolate values between psi_prev and psi
-            range = self.theta_start:q_var(3);
-            for i = 1:size(range)
-                % we calculate psi using the analytical solution
+            theta1_inc = self.theta_start(1):(-self.theta_start(1)+theta(1))/20:theta(1);
+            theta2_inc = self.theta_start(2):(-self.theta_start(2)+theta(2))/20:theta(2);
+            psi = [0, 0];
+            if (self.theta_start ~= theta)
+                for i = 1:size(theta1_inc,2)
+                    % we calculate psi using the analytical solution
+                    psi = analytical_soln(self, [theta1_inc(i), theta2_inc(i)], s, psi_prev);
+                    psi_prev = psi;
+                end
+            else
+%                 we calculate psi using the analytical solution
                 psi = analytical_soln(self, theta, s, psi_prev);
-                psi_prev = psi;
             end
+            self.theta_start = theta;
 
 %             % we calculate psi using the analytical solution
 %             psi = analytical_soln(self, theta, s, psi_prev);

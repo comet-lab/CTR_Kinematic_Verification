@@ -12,7 +12,7 @@ classdef Robot < handle
         lls = []
         phi = []
         kappa = []
-        theta_start = 0
+        theta_start = [0, 0]
 
         tubes = []
     end
@@ -516,14 +516,20 @@ classdef Robot < handle
             theta = get_theta(self, q_var);
             
             % interpolate values between psi_prev and psi
-            range = self.theta_start:q_var(3);
+            theta1_inc = self.theta_start(1):(-self.theta_start(1)+theta(1))/10:theta(1);
+            theta2_inc = self.theta_start(2):(-self.theta_start(2)+theta(2))/10:theta(2);
             psi = [0, 0];
-            for i = 1:size(range, 2)
-                % we calculate psi using the analytical solution
-                psi = analytical_soln(self, [deg2rad(range(i)), theta(2)], s, psi_prev);
-                psi_prev = psi;
+            if (self.theta_start ~= theta)
+                for i = 1:size(theta1_inc,2)
+                    % we calculate psi using the analytical solution
+                    psi = analytical_soln(self, [theta1_inc(i), theta(2)], s, psi_prev);
+                    psi_prev = psi;
+                end
+            else
+%                 we calculate psi using the analytical solution
+                psi = analytical_soln(self, theta, s, psi_prev);
             end
-            self.theta_start = q_var(3);
+            self.theta_start = theta;
 
 %             % we calculate psi using the analytical solution
 %             psi = analytical_soln(self, theta, s, psi_prev);
