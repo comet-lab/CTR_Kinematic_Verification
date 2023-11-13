@@ -1,0 +1,27 @@
+joint_values_to_try = 0:5:100;
+
+tube1_x_effects = zeros([size(joint_values_to_try) size(joint_values_to_try) size(joint_values_to_try)]);
+tube1_y_effects = zeros([size(joint_values_to_try) size(joint_values_to_try) size(joint_values_to_try)]);
+tube1_z_effects = zeros([size(joint_values_to_try) size(joint_values_to_try) size(joint_values_to_try)]);
+tube2_x_effects = zeros([size(joint_values_to_try) size(joint_values_to_try) size(joint_values_to_try)]);
+tube2_y_effects = zeros([size(joint_values_to_try) size(joint_values_to_try) size(joint_values_to_try)]);
+tube2_z_effects = zeros([size(joint_values_to_try) size(joint_values_to_try) size(joint_values_to_try)]);
+tube3_x_effects = zeros([size(joint_values_to_try) size(joint_values_to_try) size(joint_values_to_try)]);
+tube3_y_effects = zeros([size(joint_values_to_try) size(joint_values_to_try) size(joint_values_to_try)]);
+tube3_z_effects = zeros([size(joint_values_to_try) size(joint_values_to_try) size(joint_values_to_try)]);
+
+for rho1=joint_values_to_try
+    for rho2=joint_values_to_try
+        for rho3=joint_values_to_try
+
+            q = [rho1 rho2 rho3 0 0 0];
+            
+            disp(q);
+
+            [avg, stdev] = morris_screening(q);
+
+            
+
+        end
+    end
+end
