@@ -1,0 +1,17 @@
+clear;
+
+num_tubes = 2;      % number of tubes for test
+
+tube1 = Tube(2.792*10^-3, 3.3*10^-3, 1/17, 90*10^-3, 50*10^-3, 1935*10^6);
+tube2 = Tube(2.132*10^-3, 2.64*10^-3, 1/22, 170*10^-3, 50*10^-3, 1935*10^6);
+tube3 = Tube(1.472*10^-3, 1.98*10^-3, 1/29, 250*10^-3, 50*10^-3, 193*10^6);
+
+
+tubes = [tube1, tube2];
+
+robot = Robot(tubes, false); 
+rho = [0,0];
+theta = [deg2rad(60), deg2rad(0)];
+
+x2n = tubes(1).E*tubes(1).I*tubes(1).k*cos(theta(1)) + tubes(2).E*tubes(2).I*tubes(2).k*cos(theta(2));
+x2 = x2n/(self.tubes(1).E*self.tubes(1).I + tubes(2).E*self.tubes(2).I);

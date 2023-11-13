@@ -4,6 +4,7 @@ clear;
 % Initialize test information and flags
 num_tubes = 2;      % number of tubes for test
 
+% tube parameter: (id, od, curvature, straight section length, arc length, young's modulus)
 tube1 = Tube(2.792*10^-3, 3.3*10^-3, 1/17, 90*10^-3, 50*10^-3, 1935*10^6);
 tube2 = Tube(2.132*10^-3, 2.64*10^-3, 1/22, 170*10^-3, 50*10^-3, 1935*10^6);
 tube3 = Tube(1.472*10^-3, 1.98*10^-3, 1/29, 250*10^-3, 50*10^-3, 193*10^6);
@@ -21,6 +22,9 @@ robot = Robot(tubes, false);    % robot object (to call forward kinematics of ro
 % 1 - Analytical Solution
 % 2 - Energy Minimisation
 m_flag = 1;
+
+% flag to plot psi vs theta
+pt_flag = false;
 
 
 % set flag to true to compare defualt method to both PCC and mocap
@@ -136,18 +140,30 @@ for i = 1:test_points
     % x n            -> iterating trhough the test points
    
     
-    if m_flag == 0
-        TT(:,:,i) = robot.fkin(q_tubes(i,:));
-    elseif m_flag == 1
-        [TT(:,:,i), psi(:,i)] = robot.fkin_tors_as(q_tubes(i,:), psi_prev);
-        psi_prev = psi(:,i);
-        psi_deg = (psi')*(180/3.14159);
-    elseif m_flag == 2
-        [TT(:,:,i), psi(:,i)] = robot.fkin_tors_em(q_tubes(i,:), psi_prev);
-        psi_prev = psi(:,i);
-        psi_deg = (psi')*(180/3.14159);
+    if ~compare_flag
+        if m_flag == 0
+            TT(:,:,i) = robot.fkin(q_tubes(i,:));
+        elseif m_flag == 1
+            [TT(:,:,i), psi(:,i)] = robot.fkin_tors_as(q_tubes(i,:), psi_prev);
+            psi_prev = psi(:,i);
+            psi_deg = (psi')*(180/3.14159);
+        elseif m_flag == 2
+            [TT(:,:,i), psi(:,i)] = robot.fkin_tors_em(q_tubes(i,:), psi_prev);
+            psi_prev = psi(:,i);
+            psi_deg = (psi')*(180/3.14159);
+        end
+    else
+        TT_pcc(:,:,i) = robot.fkin(q_tubes(i,:));
+        
+        [TT_as(:,:,i), psi_as(:,i)] = robot.fkin_tors_as(q_tubes(i,:), psi_prev);
+        psi_as_prev = psi_as(:,i);
+        psia_as_deg = (psi_as')*(180/3.14159);
+
+        [TT_em(:,:,i), psi_em(:,i)] = robot.fkin_tors_em(q_tubes(i,:), psi_prev);
+        psi_em_prev = psi_em(:,i);
+        psi_em_deg = (psi_em')*(180/3.14159);
+        
     end
-    
 
     
     theta_deg = q_tubes(:, 3:4);
@@ -209,7 +225,12 @@ ee_hf_pos_mm = ee_hf_pos*10^3;
 figure(1)
 
 subplot(3,1,1)
-plot(range, [ee_fk_pos_mm(:,1), ee_hf_pos_mm(:,1)]);
+if compare_flag
+    plot(range, [ee_fk_pos_mm(:,1), ee_hf_pos_mm(:,1)]);
+else
+    plot(range, [ee_fk_pos_mm(:,1), ee_hf_pos_mm(:,1)]);
+end
+
 grid on;
 set(gca,'FontSize',16,'fontWeight','bold')
 set(findall(gcf,'type','text'),'FontSize',16,'fontWeight','bold')
@@ -272,7 +293,7 @@ ylabel("[mm]");
 title("Error box plot (" + test_points +"datapoints)");
 
 
-if m_flag > 0
+if (m_flag > 0 && pt_flag == 1)
     figure(3)
     subplot(2,1,1)
     plot(range, [psi_deg(:,1), theta_deg(:,1)]);
