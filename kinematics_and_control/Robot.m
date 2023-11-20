@@ -406,7 +406,6 @@ classdef Robot < handle
 
         end
 
-
         function darcparam_dq = calc_robot_dep(self, psi, link_len)
             
             I = [self.tubes(1).I, self.tubes(2).I];
@@ -455,10 +454,7 @@ classdef Robot < handle
             dphi2_dq = dphi2_dpsi*(pinv(df_dpsi))*df_dq;
             dphi3_dq = dphi3_dpsi*(pinv(df_dpsi))*df_dq;
 
-%             dk_dq = [dk1_dq, dk2_dq, dk3_dq];
-%             dphi_dq = [dphi1_dq, dphi2_dq, dphi3_dq];
-%             dl_dq = [dl1_dq, dl2_dq, dl3_dq];
-        
+
             darcparam_dq = [dk1_dq;
                             dphi1_dq;
                             dl1_dq;
@@ -468,6 +464,7 @@ classdef Robot < handle
                             dk3_dq;
                             dphi3_dq;
                             dl3_dq];
+
 
         end
 
@@ -483,6 +480,7 @@ classdef Robot < handle
                                                 0, 1, 0];
             end
         end
+
 
         function A = adj(T)
 
@@ -515,7 +513,6 @@ classdef Robot < handle
             multi_link_jacobian = calc_multi_link_jacobian(self, kappa, phi, link_len);
             complete_jacobian = multi_link_jacobian*darcparms_dq;
         end
-
 
 
 
