@@ -406,6 +406,7 @@ classdef Robot < handle
 
         end
 
+
         function darcparam_dq = calc_robot_dep(self, psi, link_len)
             
             I = [self.tubes(1).I, self.tubes(2).I];
@@ -465,7 +466,6 @@ classdef Robot < handle
                             dphi3_dq;
                             dl3_dq];
 
-
         end
 
 
@@ -491,34 +491,6 @@ classdef Robot < handle
             A = [R z; pr R];
         end
 
-        function multi_link_jacobian = calc_multi_link_jacobian(self, single_link_j, kappa, phi, link_len)
-
-            single_link_j = calc_single_link_jacobian(kappa, phi, link_len);
-
-            T = calc_T(self, link_len, phi, kappa);
-            t(:,:,1) = T(:,:,1);
-            t(:,:,2) = T(:,:,1)*T(:,:,2);
-            t(:,:,3) = T(:,:,1)*T(:,:,2)*T(:,:,3);
-            for i=1:3
-                A(:,:,i) = adj(t(:,:,i));
-            end
-            multi_link_jacobian = [single_link_j(:,:,1), A(:,:,3)*single_link_j(:,:,2), A(:,:,3)*single_link_j(:,:,3)];
-        
-        end
-
-        
-
-
-        function A = adj(T)
-
-            R = [T(1,1,k) T(1,2,k) T(1,3,k); T(2,1,k) T(2,2,k) T(2,3,k); T(3,1,k) T(3,2,k) T(3,3,k)];
-            p = [T(1,4,k) T(2,4,k) T(3,4,k)]';
-            swp = [0 -p(3) p(2); p(3) 0 -p(1); -p(2) p(1) 0];
-            pr = swp*R;
-            z  = zeros(3);
-            A = [R z; pr R];
-        end
-
         function multi_link_jacobian = calc_multi_link_jacobian(self, kappa, phi, link_len)
 
             single_link_j = calc_single_link_jacobian(kappa, phi, link_len);
@@ -530,7 +502,7 @@ classdef Robot < handle
             for i=1:3
                 A(:,:,i) = adj(t(:,:,i));
             end
-            multi_link_jacobian = [single_link_j(:,:,1), A(:,:,3)*single_link_j(:,:,2), A(:,:,3)*single_link_j(:,:,3)];
+            multi_link_jacobian = [single_link_j(:,:,1), A(:,:,1)*single_link_j(:,:,2), A(:,:,2)*single_link_j(:,:,3)];
         
         end
 
@@ -540,7 +512,6 @@ classdef Robot < handle
             multi_link_jacobian = calc_multi_link_jacobian(self, kappa, phi, link_len);
             complete_jacobian = multi_link_jacobian*darcparms_dq;
         end
-
 
 
         function psi = tors_comp(self, alpha, k)

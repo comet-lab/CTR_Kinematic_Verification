@@ -124,7 +124,11 @@ namespace NDI.CapiSampleApplication
             //string fileRead = filedir + "21_09_23-16_09_2-tubes_rotate.csv";
             //string fileRead = filedir + "06_10_23-17_44_3-tubes_in-plane-bending.csv";
             //string fileRead = filedir + "07_10_23-14_56_2-tubes_rotate.csv";
+<<<<<<< HEAD
             string fileRead = filedir + "21_11_23-13_39_2-tubes_rotate.csv";
+=======
+            string fileRead = filedir + "20_11_23-15_31_2-tubes_rotate.csv";
+>>>>>>> 1b65e17 (added fucntion to calculate the  complete jacobian function)
 
             int test_flag = 0;
 
