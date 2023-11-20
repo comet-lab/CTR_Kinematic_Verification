@@ -407,7 +407,7 @@ classdef Robot < handle
         end
 
 
-        function [dk_dq, dphi_dq, dl_dq] = calc_robot_dep(self, psi, link_len)
+        function darcparam_dq = calc_robot_dep(self, psi, link_len)
             
             I = [self.tubes(1).I, self.tubes(2).I];
             E = self.tubes(1).E;
@@ -455,9 +455,19 @@ classdef Robot < handle
             dphi2_dq = dphi2_dpsi*(pinv(df_dpsi))*df_dq;
             dphi3_dq = dphi3_dpsi*(pinv(df_dpsi))*df_dq;
 
-            dk_dq = [dk1_dq, dk2_dq, dk3_dq];
-            dphi_dq = [dphi1_dq, dphi2_dq, dphi3_dq];
-            dl_dq = [dl1_dq, dl2_dq, dl3_dq];
+%             dk_dq = [dk1_dq, dk2_dq, dk3_dq];
+%             dphi_dq = [dphi1_dq, dphi2_dq, dphi3_dq];
+%             dl_dq = [dl1_dq, dl2_dq, dl3_dq];
+        
+            darcparam_dq = [dk1_dq;
+                            dphi1_dq;
+                            dl1_dq;
+                            dk2_dq;
+                            dphi2_dq;
+                            dl2_dq;
+                            dk3_dq;
+                            dphi3_dq;
+                            dl3_dq];
 
         end
 
@@ -484,7 +494,7 @@ classdef Robot < handle
             A = [R z; pr R];
         end
 
-        function multi_link_jacobian = calc_multi_link_jacobian(self, single_link_j, kappa, phi, link_len)
+        function multi_link_jacobian = calc_multi_link_jacobian(self, kappa, phi, link_len)
 
             single_link_j = calc_single_link_jacobian(kappa, phi, link_len);
 
@@ -499,7 +509,14 @@ classdef Robot < handle
         
         end
 
-        
+        function complete_jacobian = calc_complete_jacobian(self, psi, link_len, kappa, phi)
+
+            darcparms_dq = calc_robot_dep(self, psi, link_len);
+            multi_link_jacobian = calc_multi_link_jacobian(self, kappa, phi, link_len);
+            complete_jacobian = multi_link_jacobian*darcparms_dq;
+        end
+
+
 
 
         function psi = tors_comp(self, alpha, k)

@@ -123,7 +123,8 @@ namespace NDI.CapiSampleApplication
 
             //string fileRead = filedir + "21_09_23-16_09_2-tubes_rotate.csv";
             //string fileRead = filedir + "06_10_23-17_44_3-tubes_in-plane-bending.csv";
-            string fileRead = filedir + "07_10_23-14_56_2-tubes_rotate.csv";
+            //string fileRead = filedir + "07_10_23-14_56_2-tubes_rotate.csv";
+            string fileRead = filedir + "20_11_23-15_31_2-tubes_rotate.csv";
 
             int test_flag = 0;
 
@@ -153,7 +154,7 @@ namespace NDI.CapiSampleApplication
             int end_flag = 0;
             int write_flag = 0;
 
-            SerialPort port = new SerialPort("COM6", 250000);
+            SerialPort port = new SerialPort("COM4", 250000);
             TextFieldParser parser = new TextFieldParser(fileRead);
 
             parser.TextFieldType = FieldType.Delimited;

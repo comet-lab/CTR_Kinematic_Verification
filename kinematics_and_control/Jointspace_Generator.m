@@ -1,8 +1,8 @@
 classdef Jointspace_Generator < handle
 
     properties
-        cart1 = Cart(0, 40, -45, 45);
-        cart2 = Cart(0, 45, -45, 45);
+        cart1 = Cart(0, 40, -90, 90);
+        cart2 = Cart(0, 40, -90, 90);
         cart3 = Cart(0, 0, 0, 0);
 
 
