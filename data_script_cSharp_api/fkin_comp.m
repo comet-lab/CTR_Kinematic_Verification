@@ -2,18 +2,13 @@ clear;
 % mocap vs FKin
 
 % Initialize test information and flags
-num_tubes = 3;      % number of tubes for test
+num_tubes = 2;      % number of tubes for test
 
 % tube parameter: (id, od, curvature, straight section length, arc length, young's modulus)
-<<<<<<< HEAD
-tube1 = Tube(2.792*10^-3, 3.3*10^-3, 1/13.64, 90*10^-3, 50*10^-3, 1935*10^6);
-tube2 = Tube(2.132*10^-3, 2.64*10^-3, 1/12.73, 170*10^-3, 50*10^-3, 1935*10^6);
-tube3 = Tube(1.472*10^-3, 1.98*10^-3, 1/16.65, 250*10^-3, 50*10^-3, 193*10^6);
-=======
+
 tube1 = Tube(2.792*10^-3, 3.3*10^-3, 1/15.1, 90*10^-3, 50*10^-3, 1935*10^6);
 tube2 = Tube(2.132*10^-3, 2.64*10^-3, 1/17.2, 170*10^-3, 50*10^-3, 1935*10^6);
 tube3 = Tube(1.472*10^-3, 1.98*10^-3, 1/17.6, 250*10^-3, 50*10^-3, 193*10^6);
->>>>>>> 1b65e17 (added fucntion to calculate the  complete jacobian function)
 
 test_points = 16;   % number of test points
 fpp = 20;           % number of frames per point
@@ -53,11 +48,9 @@ compare_flag = false;
 % filename = 'D:/FichStuff/CTR_Fall23/TestData/2023-10-9_02-10-58.csv';
 % filename = 'D:/FichStuff/CTR_Fall23/TestData/2023-10-6_05-47-00.csv';
 % filename = 'D:/FichStuff/CTR_Fall23/2023-11-20_01-51-26.csv';
-<<<<<<< HEAD
+
 filename = 'D:/FichStuff/CTR_Fall23/2023-11-21_01-41-07.csv';
-=======
-filename = 'D:/FichStuff/CTR_Fall23/2023-11-20_02-46-17.csv';
->>>>>>> 1b65e17 (added fucntion to calculate the  complete jacobian function)
+
 % filename = 'D:/FichStuff/CTR_Fall23/2023-11-20_03-33-12.csv';
 
 T1 = readtable(filename, 'Format','auto');
@@ -160,19 +153,20 @@ for i = 1:test_points
     
 
 %         if m_flag == 0
-<<<<<<< HEAD
+
+%         TT(:,:,i) = robot.fkin(q_tubes(i,:));
+%         elseif m_flag == 1
+   
+%         elseif m_flag == 1
+%         [TT(:,:,i), psi(:,i)] = robot.fkin_tors_as(q_tubes(i,:), psi_prev);
+%         psi_prev = psi(:,i);
+%         psi_deg = (psi')*(180/3.14159);
 %         TT(:,:,i) = robot.fkin(q_tubes(i,:));
 %         elseif m_flag == 1
         [TT(:,:,i), psi(:,i)] = robot.fkin_tors_as(q_tubes(i,:), psi_prev);
         psi_prev = psi(:,i);
         psi_deg = (psi')*(180/3.14159);
-=======
-        TT(:,:,i) = robot.fkin(q_tubes(i,:));
-%         elseif m_flag == 1
-%         [TT(:,:,i), psi(:,i)] = robot.fkin_tors_as(q_tubes(i,:), psi_prev);
-%         psi_prev = psi(:,i);
-%         psi_deg = (psi')*(180/3.14159);
->>>>>>> 1b65e17 (added fucntion to calculate the  complete jacobian function)
+
 %         elseif m_flag == 2
 %             [TT(:,:,i), psi(:,i)] = robot.fkin_tors_em(q_tubes(i,:), psi_prev);
 %             psi_prev = psi(:,i);
