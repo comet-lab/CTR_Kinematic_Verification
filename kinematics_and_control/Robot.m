@@ -232,6 +232,20 @@ classdef Robot < handle
             end
         end
 
+        function T = calc_T(self, s, phi, K)
+            T=eye(4);
+
+%             if(self.num_tubes ==2)
+            for i =1:(self.num_tubes*2 - 1)
+                tt = [[cos(phi(i))*cos(K(i)*s(i)), -sin(phi(i)), cos(phi(i))*sin(K(i)*s(i)), cos(phi(i))*(1-cos(K(i)*s(i)))/K(i)];
+                    [sin(phi(i))*cos(K(i)*s(i)), +cos(phi(i)), sin(phi(i))*sin(K(i)*s(i)), sin(phi(i))*(1-cos(K(i)*s(i)))/K(i)];
+                    [-sin(K(i)*s(i)), 0, cos(K(i)*s(i)), sin(K(i)*s(i))/K(i)];
+                    [0, 0, 0, 1]];
+                
+                T(:,:,i) = tt;
+            end
+        end
+
         % This is a function to plot the tube as shown by the forward
         % kinematics
         function plot_tube(self, q_var, s, phi, K)
@@ -391,6 +405,119 @@ classdef Robot < handle
             psi = [double(psi1), double(psi2)]; 
 
         end
+
+
+        function darcparam_dq = calc_robot_dep(self, psi, link_len)
+            
+            I = [self.tubes(1).I, self.tubes(2).I];
+            E = self.tubes(1).E;
+            G = self.tubes(1).G;
+            J = [self.tubes(1).J, self.tubes(2).J];
+            Ls = [self.tubes(1).l, self.tubes(2).l];
+            k = [self.tubes(1).k, self.tubes(2).k];
+
+            c1 = G*J(1)/Ls(1);
+            c2 = G*J(2)/Ls(2);
+            c3 = E*E*I(1)*I(2)*k(1)*k(2)/(E*I(1)+E*I(2));
+
+            b1 = c3/c1;
+            b2 = c1/c2;
+
+            A1 = E*I(1)*k(1)/(E(I(1)+I(2))); 
+            A2 = E*I(2)*k(2)/(E(I(1)+I(2)));
+
+            df_dpsi = [c1 + link_len(2)*c3*cos(psi(1) - psi(2)), -link_len(2)*c3*cos(psi(1) - psi(2));
+                       -link_len(2)*c3*cos(psi(1) - psi(2)), c2 + link_len(2)*c3*cos(psi(1) - psi(2))];
+
+            df_dq = [c3*sin(psi(1) - psi(2)), -c1, -c3*sin(psi(1) - psi(2)), 0;
+                     -c3*sin(psi(1) - psi(2)), 0, c3*sin(psi(1) - psi(2)), c2];
+
+            dk1_dq = [0 0 0 0];
+            dk3_dq = [0 0 0 0];
+
+            dk2_dpsi = [(2*A1*cos(psi(1))*(A1*sin(psi(1))+A2*sin(psi(2))) - 2*A1*sin(psi(1))*(A1*cos(psi(1)) + A2*cos(psi(2))))/(2*sqrt(pow(A1*cos(psi(1)) + A2*cos(psi(2)), 2) + pow(A1*sin(psi(1)) + A2*sin(psi(2)), 2)));
+                        (2*A2*cos(psi(2))*(A1*sin(psi(1))+A2*sin(psi(2))) - 2*A2*sin(psi(2))*(A1*cos(psi(1)) + A2*cos(psi(2))))/(2*sqrt(pow(A1*cos(psi(1)) + A2*cos(psi(2)), 2) + pow(A1*sin(psi(1)) + A2*sin(psi(2)), 2)))]';
+            
+            dphi1_dpsi = [1, 0];
+            dphi3_dpsi = [0, 1];
+
+            dphi2_dpsi = [A1*(A1+A2*cos(psi(1) - psi(2)))/(A1*A1 + 2*A1*A2*cos(psi(1) - psi(2)) + A2*A2);
+                          A2*(A2+A1*cos(psi(1) - psi(2)))/(A1*A1 + 2*A1*A2*cos(psi(1) - psi(2)) + A2*A2)]';
+
+            dl1_dq = [-1, 0, 1, 0];
+            dl2_dq = [1, 0, -1, 0];
+            dl3_dq = [-1, 0, 1, 0];
+
+
+            dk2_dq = dk2_dpsi*(pinv(df_dpsi))*df_dq;
+
+            dphi1_dq = dphi1_dpsi*(pinv(df_dpsi))*df_dq;
+            dphi2_dq = dphi2_dpsi*(pinv(df_dpsi))*df_dq;
+            dphi3_dq = dphi3_dpsi*(pinv(df_dpsi))*df_dq;
+
+%             dk_dq = [dk1_dq, dk2_dq, dk3_dq];
+%             dphi_dq = [dphi1_dq, dphi2_dq, dphi3_dq];
+%             dl_dq = [dl1_dq, dl2_dq, dl3_dq];
+        
+            darcparam_dq = [dk1_dq;
+                            dphi1_dq;
+                            dl1_dq;
+                            dk2_dq;
+                            dphi2_dq;
+                            dl2_dq;
+                            dk3_dq;
+                            dphi3_dq;
+                            dl3_dq];
+
+        end
+
+
+        function single_link_jacobian = calc_single_link_jacobian(kappa, phi, link_len)
+
+            for i = 1:3
+                single_link_jacobian(:,:, i) = [cos(phi(i))*(cos(kappa(i)*link_len(i)) - 1)/(kappa(i)*kappa(i)), 0, 0;
+                                                sin(phi(i))*(cos(kappa(i)*link_len(i)) - 1)/(kappa(i)*kappa(i)), 0, 0;
+                                                -(sin(kappa(i)*link_len(i)) - kappa(i)*link_len(i))/(kappa(i)*kappa(i)), 0, 1;
+                                                -link_len(i)*sin(phi(i)), 0, -kappa(i)*sin(phi(i));
+                                                link_len(i)*cos(phi(i)), 0, kappa(i)*cos(phi(i));
+                                                0, 1, 0];
+            end
+        end
+
+        function A = adj(T)
+
+            R = [T(1,1,k) T(1,2,k) T(1,3,k); T(2,1,k) T(2,2,k) T(2,3,k); T(3,1,k) T(3,2,k) T(3,3,k)];
+            p = [T(1,4,k) T(2,4,k) T(3,4,k)]';
+            swp = [0 -p(3) p(2); p(3) 0 -p(1); -p(2) p(1) 0];
+            pr = swp*R;
+            z  = zeros(3);
+            A = [R z; pr R];
+        end
+
+        function multi_link_jacobian = calc_multi_link_jacobian(self, kappa, phi, link_len)
+
+            single_link_j = calc_single_link_jacobian(kappa, phi, link_len);
+
+            T = calc_T(self, link_len, phi, kappa);
+            t(:,:,1) = T(:,:,1);
+            t(:,:,2) = T(:,:,1)*T(:,:,2);
+            t(:,:,3) = T(:,:,1)*T(:,:,2)*T(:,:,3);
+            for i=1:3
+                A(:,:,i) = adj(t(:,:,i));
+            end
+            multi_link_jacobian = [single_link_j(:,:,1), A(:,:,3)*single_link_j(:,:,2), A(:,:,3)*single_link_j(:,:,3)];
+        
+        end
+
+        function complete_jacobian = calc_complete_jacobian(self, psi, link_len, kappa, phi)
+
+            darcparms_dq = calc_robot_dep(self, psi, link_len);
+            multi_link_jacobian = calc_multi_link_jacobian(self, kappa, phi, link_len);
+            complete_jacobian = multi_link_jacobian*darcparms_dq;
+        end
+
+
+
 
         function psi = tors_comp(self, alpha, k)
 
