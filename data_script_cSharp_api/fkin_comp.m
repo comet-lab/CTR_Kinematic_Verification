@@ -25,14 +25,10 @@ robot = Robot(tubes, false);    % robot object (to call forward kinematics of ro
 % 0 - Piecewise Constant Curvature
 % 1 - Analytical Solution
 % 2 - Energy Minimisation
-m_flag = 0;
+m_flag = 1;
 
 % flag to plot psi vs theta
 pt_flag = false;
-
-
-% set flag to true to compare defualt method to both PCC and mocap
-compare_flag = false;
 
 
 
@@ -149,19 +145,25 @@ for i = 1:test_points
    
     
 
-%         if m_flag == 0
-%         TT(:,:,i) = robot.fkin(q_tubes(i,:));
-%         elseif m_flag == 1
-        [TT(:,:,i), psi(:,i)] = robot.fkin_tors_as(q_tubes(i,:), psi_prev);
-        psi_prev = psi(:,i);
-        psi_deg = (psi')*(180/3.14159);
-%         elseif m_flag == 2
-%             [TT(:,:,i), psi(:,i)] = robot.fkin_tors_em(q_tubes(i,:), psi_prev);
-%             psi_prev = psi(:,i);
-%             psi_deg = (psi')*(180/3.14159);
-%         end
-
-
+        if m_flag == 0
+            TT(:,:,i) = robot.fkin(q_tubes(i,:));
+        
+        elseif m_flag == 1
+            [TT(:,:,i), psi(:,i)] = robot.fkin_tors_as(q_tubes(i,:), psi_prev);
+            psi_prev = psi(:,i);
+            theta_prev = deg2rad(q_tubes(i, 3:4));
+            psi_i = psi(:,i);
+            psi_deg = (psi')*(180/3.14159);
+            jac(:,:,i) = robot.calc_complete_jacobian(q_tubes(i,:), psi_i);
+%             inv_err(i,:) = robot.check_inverseK(ee_hf_pos(i,:)', q_tubes(i,:), psi_i);
+        
+        elseif m_flag == 2
+            [TT(:,:,i), psi(:,i)] = robot.fkin_tors_em(q_tubes(i,:), psi_prev);
+            psi_prev = psi(:,i);
+            psi_deg = (psi')*(180/3.14159);
+        
+        end
+    
     
     theta_deg = q_tubes(:, 3:4);
     % Robot_home in the forward kinematics model
