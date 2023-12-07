@@ -433,22 +433,35 @@ classdef Robot < handle
                        -link_len(2)*c3*cos(psi(1) - psi(2)), c2 + link_len(2)*c3*cos(psi(1) - psi(2))];
 
             df_dq = [c3*sin(psi(1) - psi(2)), -c1, -c3*sin(psi(1) - psi(2)), 0;
-                     -c3*sin(psi(1) - psi(2)), 0, c3*sin(psi(1) - psi(2)), -c2];
+                     -c3*sin(psi(1) - psi(2)), 0, c3*sin(psi(1) - psi(2)), c2];
 
             dk1_dq = [0 0 0 0];
             dk3_dq = [0 0 0 0];
 
             dk2_dpsi = [(2*A1*cos(psi(1))*(A1*sin(psi(1))+A2*sin(psi(2))) - 2*A1*sin(psi(1))*(A1*cos(psi(1)) + A2*cos(psi(2))))/(2*sqrt(pow(A1*cos(psi(1)) + A2*cos(psi(2)), 2) + pow(A1*sin(psi(1)) + A2*sin(psi(2)), 2)));
                         (2*A2*cos(psi(2))*(A1*sin(psi(1))+A2*sin(psi(2))) - 2*A2*sin(psi(2))*(A1*cos(psi(1)) + A2*cos(psi(2))))/(2*sqrt(pow(A1*cos(psi(1)) + A2*cos(psi(2)), 2) + pow(A1*sin(psi(1)) + A2*sin(psi(2)), 2)))]';
-                     
+                     -c3*sin(psi(1) - psi(2)), 0, c3*sin(psi(1) - psi(2)), -c2];
 
+            dk0_dq = [0 0 0 0];
+            
+            dk1_dq = [0 0 0 0];
+            dk3_dq = [0 0 0 0];
+
+            dk2_dpsi = [(2*A1*cos(psi(1))*(A1*sin(psi(1))+A2*sin(psi(2))) - 2*A1*sin(psi(1))*(A1*cos(psi(1)) + A2*cos(psi(2))))/(2*sqrt(power(A1*cos(psi(1)) + A2*cos(psi(2)), 2) + power(A1*sin(psi(1)) + A2*sin(psi(2)), 2)));
+                        (2*A2*cos(psi(2))*(A1*sin(psi(1))+A2*sin(psi(2))) - 2*A2*sin(psi(2))*(A1*cos(psi(1)) + A2*cos(psi(2))))/(2*sqrt(power(A1*cos(psi(1)) + A2*cos(psi(2)), 2) + power(A1*sin(psi(1)) + A2*sin(psi(2)), 2)))]';
+>>>>>>> e3a4fe62c88a88647d98939a2c301f6d08b65e4a
+            
             dphi1_dpsi = [1, 0];
             dphi3_dpsi = [0, 1];
 
             dphi2_dpsi = [A1*(A1+A2*cos(psi(1) - psi(2)))/(A1*A1 + 2*A1*A2*cos(psi(1) - psi(2)) + A2*A2);
                           A2*(A2+A1*cos(psi(1) - psi(2)))/(A1*A1 + 2*A1*A2*cos(psi(1) - psi(2)) + A2*A2)]';
 
+<<<<<<< HEAD
+=======
+            dl0_dq = [1, 0, 0, 0];
 
+>>>>>>> e3a4fe62c88a88647d98939a2c301f6d08b65e4a
             dl1_dq = [-1, 0, 1, 0];
             dl2_dq = [1, 0, -1, 0];
             dl3_dq = [-1, 0, 1, 0];
@@ -456,8 +469,16 @@ classdef Robot < handle
 
             dk2_dq = dk2_dpsi*(pinv(df_dpsi))*df_dq;
 
+<<<<<<< HEAD
+            dphi1_dq = dphi1_dpsi*(pinv(df_dpsi))*df_dq;
+            dphi2_dq = dphi2_dpsi*(pinv(df_dpsi))*df_dq;
+            dphi3_dq = dphi3_dpsi*(pinv(df_dpsi))*df_dq;
 
 
+            darcparam_dq = [dk1_dq;
+                            dphi1_dq;
+                            dl1_dq;
+=======
             dphi0_dq = [0, 0, 0, 0];
 
             dphi1_dq = dphi1_dpsi*(pinv(df_dpsi))*df_dq;
@@ -472,6 +493,7 @@ classdef Robot < handle
             darcparam_dq = [dk1_dq;
                             dphi1_dq;
                             dl1_dq; 
+>>>>>>> e3a4fe62c88a88647d98939a2c301f6d08b65e4a
                             dk2_dq;
                             dphi2_dq;
                             dl2_dq;
@@ -479,9 +501,26 @@ classdef Robot < handle
                             dphi3_dq;
                             dl3_dq];
 
+<<<<<<< HEAD
         end
 
 
+        function single_link_jacobian = calc_single_link_jacobian(kappa, phi, link_len)
+=======
+%             darcparam_dq = [dk0_dq;
+%                             dphi0_dq;
+%                             dl0_dq;
+%                             dk1_dq;
+%                             dphi1_dq;
+%                             dl1_dq; 
+%                             dk2_dq;
+%                             dphi2_dq;
+%                             dl2_dq;
+%                             dk3_dq;
+%                             dphi3_dq;
+%                             dl3_dq];
+
+        end
 
 
         function A = adj(self, T)
@@ -496,14 +535,48 @@ classdef Robot < handle
         
         
         function single_link_jacobian = calc_single_link_jacobian(self, kappa, phi, link_len, q_var)
+>>>>>>> e3a4fe62c88a88647d98939a2c301f6d08b65e4a
 
             for i = 1:3
                 single_link_jacobian(:,:, i) = [cos(phi(i))*(cos(kappa(i)*link_len(i)) - 1)/(kappa(i)*kappa(i)), 0, 0;
                                                 sin(phi(i))*(cos(kappa(i)*link_len(i)) - 1)/(kappa(i)*kappa(i)), 0, 0;
                                                 -(sin(kappa(i)*link_len(i)) - kappa(i)*link_len(i))/(kappa(i)*kappa(i)), 0, 1;
                                                 -link_len(i)*sin(phi(i)), 0, -kappa(i)*sin(phi(i));
-                                                link_len(i)*cos(phi(i)), 0, kappa(i)*cos(phi(i))];
+                                                link_len(i)*cos(phi(i)), 0, kappa(i)*cos(phi(i));
+                                                0, 1, 0];
+<<<<<<< HEAD
+            end
+        end
 
+        function A = adj(T)
+
+            R = [T(1,1,k) T(1,2,k) T(1,3,k); T(2,1,k) T(2,2,k) T(2,3,k); T(3,1,k) T(3,2,k) T(3,3,k)];
+            p = [T(1,4,k) T(2,4,k) T(3,4,k)]';
+            swp = [0 -p(3) p(2); p(3) 0 -p(1); -p(2) p(1) 0];
+            pr = swp*R;
+            z  = zeros(3);
+            A = [R z; pr R];
+        end
+
+        function multi_link_jacobian = calc_multi_link_jacobian(self, kappa, phi, link_len)
+
+            single_link_j = calc_single_link_jacobian(kappa, phi, link_len);
+=======
+
+%             single_link_jacobian(:,:,1) = [cos(0), 0, 0;
+%                                             0, 0, 0;
+%                                             0, 0, 1;
+%                                             0, 0, 0;
+%                                             q_var(1)*10^-3, 0, 0;
+%                                             0, 1, 0];
+
+%             for i = 1:3
+%                 single_link_jacobian(:,:, i+1) = [cos(phi(i))*(cos(kappa(i)*link_len(i)) - 1)/(kappa(i)*kappa(i)), 0, 0;
+%                                                 sin(phi(i))*(cos(kappa(i)*link_len(i)) - 1)/(kappa(i)*kappa(i)), 0, 0;
+%                                                 -(sin(kappa(i)*link_len(i)) - kappa(i)*link_len(i))/(kappa(i)*kappa(i)), 0, 1;
+%                                                 -link_len(i)*sin(phi(i)), 0, -kappa(i)*sin(phi(i));
+%                                                 link_len(i)*cos(phi(i)), 0, kappa(i)*cos(phi(i));
+%                                                 0, 1, 0];
             end
         end
 
@@ -513,21 +586,45 @@ classdef Robot < handle
             single_link_j = calc_single_link_jacobian(self, kappa, phi, link_len, q_var);
 
             f1_f0 = [[eye(3),[0,0,q_var(1)*10^-3]'];[0,0,0,1]];
+>>>>>>> e3a4fe62c88a88647d98939a2c301f6d08b65e4a
 
             T = calc_T(self, link_len, phi, kappa);
             t(:,:,1) = T(:,:,1);
             t(:,:,2) = T(:,:,1)*T(:,:,2);
             t(:,:,3) = T(:,:,1)*T(:,:,2)*T(:,:,3);
             for i=1:3
-
+<<<<<<< HEAD
                 A(:,:,i) = adj(t(:,:,i));
             end
             multi_link_jacobian = [single_link_j(:,:,1), A(:,:,1)*single_link_j(:,:,2), A(:,:,2)*single_link_j(:,:,3)];
         
         end
 
+        function complete_jacobian = calc_complete_jacobian(self, psi, link_len, kappa, phi)
+
+            darcparms_dq = calc_robot_dep(self, psi, link_len);
+            multi_link_jacobian = calc_multi_link_jacobian(self, kappa, phi, link_len);
+            complete_jacobian = multi_link_jacobian*darcparms_dq;
+        end
+
+=======
+                A(:,:,i) = adj(self, t(:,:,i));
+            end
+            multi_link_jacobian = [single_link_j(:,:,1), A(:,:,1)*single_link_j(:,:,2), A(:,:,2)*single_link_j(:,:,3)];
 
 
+%             T = calc_T(self, link_len, phi, kappa);
+%             t(:,:,1) = f1_f0;
+%             t(:,:,2) = f1_f0*T(:,:,1);
+%             t(:,:,3) = f1_f0*T(:,:,1)*T(:,:,2);
+%             t(:,:,4) = f1_f0*T(:,:,1)*T(:,:,2)*T(:,:,3);
+%             for i=1:4
+%                 A(:,:,i) = adj(self, t(:,:,i));
+%             end
+%             multi_link_jacobian = [single_link_j(:,:,1), A(:,:,1)*single_link_j(:,:,2), A(:,:,2)*single_link_j(:,:,3), A(:,:,3)*single_link_j(:,:,4)];
+%         
+
+        end
 
         function complete_jacobian = calc_complete_jacobian(self, q_var, psi)
 
@@ -580,6 +677,8 @@ classdef Robot < handle
             flag_var = norm(targetPose - currentPose);
 
         end
+
+>>>>>>> e3a4fe62c88a88647d98939a2c301f6d08b65e4a
 
         function psi = tors_comp(self, alpha, k)
 
