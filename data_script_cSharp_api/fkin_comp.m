@@ -5,6 +5,8 @@ clear;
 num_tubes = 2;      % number of tubes for test
 
 % tube parameter: (id, od, curvature, straight section length, arc length, young's modulus)
+
+
 tube1 = Tube(2.792*10^-3, 3.3*10^-3, 1/13.64, 90*10^-3, 50*10^-3, 1935*10^6);
 tube2 = Tube(2.132*10^-3, 2.64*10^-3, 1/12.73, 170*10^-3, 50*10^-3, 1935*10^6);
 tube3 = Tube(1.472*10^-3, 1.98*10^-3, 1/16.65, 250*10^-3, 50*10^-3, 193*10^6);
@@ -31,10 +33,6 @@ m_flag = 0;
 pt_flag = false;
 
 
-% set flag to true to compare defualt method to both PCC and mocap
-compare_flag = false;
-
-
 
 % enter filename / filepath if different folder
 % filename = 'data_files/18_04_23-16_13_2-tubes_rotate';
@@ -47,7 +45,9 @@ compare_flag = false;
 % filename = 'D:/FichStuff/CTR_Fall23/TestData/2023-10-9_02-10-58.csv';
 % filename = 'D:/FichStuff/CTR_Fall23/TestData/2023-10-6_05-47-00.csv';
 % filename = 'D:/FichStuff/CTR_Fall23/2023-11-20_01-51-26.csv';
+
 filename = 'D:/FichStuff/CTR_Fall23/2023-11-21_01-41-07.csv';
+
 % filename = 'D:/FichStuff/CTR_Fall23/2023-11-20_03-33-12.csv';
 
 T1 = readtable(filename, 'Format','auto');
@@ -149,18 +149,25 @@ for i = 1:test_points
    
     
 
-%         if m_flag == 0
-%         TT(:,:,i) = robot.fkin(q_tubes(i,:));
-%         elseif m_flag == 1
-        [TT(:,:,i), psi(:,i)] = robot.fkin_tors_as(q_tubes(i,:), psi_prev);
-        psi_prev = psi(:,i);
-        psi_deg = (psi')*(180/3.14159);
-%         elseif m_flag == 2
-%             [TT(:,:,i), psi(:,i)] = robot.fkin_tors_em(q_tubes(i,:), psi_prev);
-%             psi_prev = psi(:,i);
-%             psi_deg = (psi')*(180/3.14159);
-%         end
 
+        if m_flag == 0
+            TT(:,:,i) = robot.fkin(q_tubes(i,:));
+        
+        elseif m_flag == 1
+            [TT(:,:,i), psi(:,i)] = robot.fkin_tors_as(q_tubes(i,:), psi_prev);
+            psi_prev = psi(:,i);
+            theta_prev = deg2rad(q_tubes(i, 3:4));
+            psi_i = psi(:,i);
+            psi_deg = (psi')*(180/3.14159);
+            jac(:,:,i) = robot.calc_complete_jacobian(q_tubes(i,:), psi_i);
+%             inv_err(i,:) = robot.check_inverseK(ee_hf_pos(i,:)', q_tubes(i,:), psi_i);
+        
+        elseif m_flag == 2
+            [TT(:,:,i), psi(:,i)] = robot.fkin_tors_em(q_tubes(i,:), psi_prev);
+            psi_prev = psi(:,i);
+            psi_deg = (psi')*(180/3.14159);
+        
+        end
 
     
     theta_deg = q_tubes(:, 3:4);

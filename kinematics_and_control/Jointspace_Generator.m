@@ -1,6 +1,7 @@
 classdef Jointspace_Generator < handle
 
     properties
+
         cart1 = Cart(0, 40, -90, 0);
         cart2 = Cart(0, 40, -90, 0);
         cart3 = Cart(0, 0, 0, 0);
